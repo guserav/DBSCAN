@@ -1,7 +1,7 @@
 #include <fstream>
 #include "main.h"
 
-void dbscan(const char* filename, int dimensions, char delim){
+void dbscan(const char* filename, unsigned int dimensions, char delim){
     std::string line;
     std::ifstream file(filename);
     if(file.peek() == std::ifstream::traits_type::eof()){
