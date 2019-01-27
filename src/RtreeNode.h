@@ -17,15 +17,21 @@ public:
     RtreeNode& operator=(RtreeNode&&) = delete;
 
     explicit RtreeNode(unsigned int dimensions);
+    explicit RtreeNode(RtreeNode * firstChild);
+    explicit RtreeNode(DataPointFloat* firstChild);
     ~RtreeNode();
 
     RtreeNode * insertNewPoint(DataPointFloat* dataPoint);
     bool hasLeaves();
 private:
+    void init();
     void addChild(RtreeNode* child);
     RtreeNode* addLeaveChild(DataPointFloat* child);
+    void calculateVolume();
 
     char childCount = 0;
+    float volume = 0;
+    RtreeNode * parent = nullptr;
     unsigned int dimensions;
     float * minBoundaries;
     float * maxBoundaries;

@@ -4,7 +4,7 @@
 
 #include "DataPointFloat.h"
 
-DataPointFloat::DataPointFloat(const std::string& input, int dimensions, char delim) {
+DataPointFloat::DataPointFloat(const std::string& input, unsigned int dimensions, char delim) {
     size_t endPos;
     std::string cut = input;
     std::string item;
@@ -60,5 +60,16 @@ DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.di
     obj.dimensions = 0;
     obj.cluster = 0;
     obj.data = nullptr;
+}
+
+/**
+ * Non safe access of index. value of the data point. (TODO) Think about adding safety
+ */
+float DataPointFloat::operator[](unsigned int index) {
+    return this->data[index];
+}
+
+unsigned int DataPointFloat::getDimensions() {
+    return this->dimensions;
 }
 
