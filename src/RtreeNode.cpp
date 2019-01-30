@@ -1,10 +1,6 @@
-//
-// Created by zeiske on 26.01.2019.
-//
-
 #include "RtreeNode.h"
 void RtreeNode::init() {
-    for(int i=0; i < R_TREE_NUMBER_CHIELDS; i++){
+    for(int i=0; i < R_TREE_NUMBER_CHILDS; i++){
         childNodes[i] = nullptr;
         childLeaves[i] = nullptr;
     }
@@ -12,6 +8,9 @@ void RtreeNode::init() {
     maxBoundaries = new float[this->dimensions];
 }
 
+/**
+ * This should only be used for the first node of the Tree and then probably RtreeNode(DataPointFloat *firstChild) can be used.
+ */
 RtreeNode::RtreeNode(unsigned int dimensions): dimensions(dimensions) {
     this->init();
     for(int i=0; i < dimensions; i++){
@@ -28,6 +27,10 @@ RtreeNode::RtreeNode(RtreeNode *firstChild): dimensions(firstChild->dimensions) 
     }
 }
 
+RtreeNode::RtreeNode(RtreeNode *firstChild, RtreeNode *secondChild): RtreeNode(firstChild) {
+    this->addChild(secondChild);
+}
+
 RtreeNode::RtreeNode(DataPointFloat *firstChild): dimensions(firstChild->getDimensions()) {
     this->init();
     for(int i=0; i < dimensions; i++){
@@ -39,7 +42,7 @@ RtreeNode::RtreeNode(DataPointFloat *firstChild): dimensions(firstChild->getDime
 RtreeNode::~RtreeNode() {
     delete [] minBoundaries;
     delete [] maxBoundaries;
-    for(int i=0; i < R_TREE_NUMBER_CHIELDS; i++){
+    for(int i=0; i < R_TREE_NUMBER_CHILDS; i++){
         delete childNodes[i];
         delete childLeaves[i];
     }
@@ -68,11 +71,12 @@ bool RtreeNode::hasLeaves() {
  * Adds a normal child to this node.
  *
  * This functions assumes that there are allready other children and the min/max boundaries are proberly set
+ * This should only be called when a split happened and is therefor private.
  * @param child  the child node to add.
  * @return  A new node if a split occured
  */
 void RtreeNode::addChild(RtreeNode *child) {
-    if(childCount < R_TREE_NUMBER_CHIELDS) {
+    if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childNodes[this->childCount++] = child;
         for(int i=0; i < this->dimensions; i++){
             if(this->maxBoundaries[i] < child->maxBoundaries[i]) {
@@ -81,7 +85,111 @@ void RtreeNode::addChild(RtreeNode *child) {
                 this->minBoundaries[i] = child->minBoundaries[i];
             }
         }
+        //TODO think about calculating volume in the code above on extension? This may result in better performance
+        this->calculateVolume();
     } else {
+        float sumMargins[this->dimensions];
+        float minDimValue, maxDimValue;
+        bool bubbleSortChangedMarker;
+        int splitDim = 0;
+        // Container for all Childs to better sort them
+        RtreeNode * allCurrentChilds[R_TREE_NUMBER_CHILDS + 1];
+        for(int i=0; i < R_TREE_NUMBER_CHILDS; i++) {
+            allCurrentChilds[i] = this->childNodes[i];
+        }
+        allCurrentChilds[R_TREE_NUMBER_CHILDS] = child;
+
+        for(int d=0; d < this->dimensions; d++){
+            sumMargins[d] = 0;
+            //Sort by the minimum boundary allong this axis
+            //TODO For now a bubble sort... Maybe change this later on
+            bubbleSortChangedMarker = true;
+            for(int i = 0; i < R_TREE_NUMBER_CHILDS + 1 && changed; i++){
+                bubbleSortChangedMarker = false;
+                for(int j=0; j < R_TREE_NUMBER_CHILDS + 1 - i; j++) {
+                    if(allCurrentChilds[i]->minBoundaries[d] > allCurrentChilds[j]->minBoundaries[d]) {
+                        std::swap(allCurrentChilds[i], allCurrentChilds[j]);
+                        bubbleSortChangedMarker = true;
+                    }
+                }
+            }
+            //Calculate the sum of all margins for all possible splits allong the axis d for the minimum Boundaries
+            for(int k=R_TREE_MINIMUM_CHILDS - 1; k < R_TREE_NUMBER_CHILDS - R_TREE_MINIMUM_CHILDS; k++){
+                for(int i=0; i <= this->dimensions; i++){ //TODO in case of i == d the finding of minDim can be optimised...
+                    minDimValue = allCurrentChilds[0]->minBoundaries[i];
+                    maxDimValue = allCurrentChilds[0]->maxBoundaries[i];
+                    for(int j=1; j <= k; j++) {
+                        if(maxDimValue < allCurrentChilds[j]->maxBoundaries[i]){
+                            maxDimValue = allCurrentChilds[j]->maxBoundaries[i];
+                        }
+                        if(minDimValue > allCurrentChilds[j]->minBoundaries[i]){
+                            minDimValue = allCurrentChilds[j]->minBoundaries[i];
+                        }
+                    }
+                    sumMargins[d] += maxDimValue - minDimValue;
+                    minDimValue = allCurrentChilds[k+1]->minBoundaries[i];
+                    maxDimValue = allCurrentChilds[k+1]->maxBoundaries[i];
+                    for(int j=k+2; j < R_TREE_NUMBER_CHILDS + 1; j++) {
+                        if(maxDimValue < allCurrentChilds[j]->maxBoundaries[i]){
+                            maxDimValue = allCurrentChilds[j]->maxBoundaries[i];
+                        }
+                        if(minDimValue > allCurrentChilds[j]->minBoundaries[i]){
+                            minDimValue = allCurrentChilds[j]->minBoundaries[i];
+                        }
+                    }
+                    sumMargins[d] += maxDimValue - minDimValue;
+                }
+            }
+
+            //Sort by the maximum boundary allong this axis
+            //TODO For now a bubble sort... Maybe change this later on
+            bubbleSortChangedMarker = true;
+            for(int i = 0; i < R_TREE_NUMBER_CHILDS + 1 && changed; i++){
+                bubbleSortChangedMarker = false;
+                for(int j=0; j < R_TREE_NUMBER_CHILDS + 1 - i; j++) {
+                    if(allCurrentChilds[i]->maxBoundaries[d] > allCurrentChilds[j]->maxBoundaries[d]) {
+                        std::swap(allCurrentChilds[i], allCurrentChilds[j]);
+                        bubbleSortChangedMarker = true;
+                    }
+                }
+            }
+            //Calculate the sum of all margins for all possible splits allong the axis d for the maximum Boundaries
+            for(int k=R_TREE_MINIMUM_CHILDS - 1; k < R_TREE_NUMBER_CHILDS - R_TREE_MINIMUM_CHILDS; k++){
+                for(int i=0; i <= this->dimensions; i++){ //TODO in case of i == d the finding of maxDim can be optimised...
+                    minDimValue = allCurrentChilds[0]->minBoundaries[i];
+                    maxDimValue = allCurrentChilds[0]->maxBoundaries[i];
+                    for(int j=1; j <= k; j++) {
+                        if(maxDimValue < allCurrentChilds[j]->maxBoundaries[i]){
+                            maxDimValue = allCurrentChilds[j]->maxBoundaries[i];
+                        }
+                        if(minDimValue > allCurrentChilds[j]->minBoundaries[i]){
+                            minDimValue = allCurrentChilds[j]->minBoundaries[i];
+                        }
+                    }
+                    sumMargins[d] += maxDimValue - minDimValue;
+                    minDimValue = allCurrentChilds[k+1]->minBoundaries[i];
+                    maxDimValue = allCurrentChilds[k+1]->maxBoundaries[i];
+                    for(int j=k+2; j < R_TREE_NUMBER_CHILDS + 1; j++) {
+                        if(maxDimValue < allCurrentChilds[j]->maxBoundaries[i]){
+                            maxDimValue = allCurrentChilds[j]->maxBoundaries[i];
+                        }
+                        if(minDimValue > allCurrentChilds[j]->minBoundaries[i]){
+                            minDimValue = allCurrentChilds[j]->minBoundaries[i];
+                        }
+                    }
+                    sumMargins[d] += maxDimValue - minDimValue;
+                }
+            }
+        }
+        //Find the axis with the minimum sumMargins
+        for(int d=1; d < this->dimensions; d++){
+            if(sumMargins[d] < sumMargins[splitDim]) {
+                splitDim = d;
+            }
+        }
+        //Split along the axis
+        //Find split index by finding the distribution with minimum overlap
+        //TODO implement further from here
         NOT_YET_IMPLEMENTED("Split Node without leaves");
     }
 }
@@ -94,7 +202,7 @@ void RtreeNode::addChild(RtreeNode *child) {
  * @return  A new node if a split occured
  */
 RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
-    if(childCount < R_TREE_NUMBER_CHIELDS) {
+    if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childLeaves[this->childCount++] = child;
         for(int i=0; i < this->dimensions; i++){
             if(this->maxBoundaries[i] < (*child)[i]) {

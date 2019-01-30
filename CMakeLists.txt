@@ -4,4 +4,4 @@ project(StudienarbeitCode)
 set(CMAKE_CXX_STANDARD 14)
 
 
-add_executable(StudienarbeitCode src/main.cpp src/main.h src/DataPointFloat.cpp src/DataPointFloat.h src/RtreeNode.cpp src/RtreeNode.h)
+add_executable(StudienarbeitCode src/main.cpp src/main.h src/DataPointFloat.cpp src/DataPointFloat.h src/RtreeNode.cpp src/RtreeNode.h src/Rtree.cpp src/Rtree.h)
