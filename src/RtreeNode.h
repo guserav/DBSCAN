@@ -29,6 +29,11 @@ public:
 private:
     explicit RtreeNode(unsigned int dimensions);
     void init();
+    static float calculateOverlap(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
+    static float calculateVolume(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
+    static float calculateMargin(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension, float& margin);
+    static void sortByMinBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
+    static void sortByMaxBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     void addChild(RtreeNode* child);
     RtreeNode* addLeaveChild(DataPointFloat* child);
     void calculateVolume();
@@ -41,6 +46,7 @@ private:
     float * maxBoundaries;
     RtreeNode* childNodes[R_TREE_NUMBER_CHILDS];
     DataPointFloat* childLeaves[R_TREE_NUMBER_CHILDS];
+
 };
 
 
