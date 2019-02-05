@@ -1,4 +1,3 @@
-#include <fstream>
 #include "main.h"
 
 void dbscan(const char* filename, unsigned int dimensions, char delim){

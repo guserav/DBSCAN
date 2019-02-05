@@ -1,7 +1,3 @@
-//
-// Created by eriks on 20.01.2019.
-//
-
 #include "DataPointFloat.h"
 
 DataPointFloat::DataPointFloat(const std::string& input, unsigned int dimensions, char delim) {

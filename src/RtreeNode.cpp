@@ -1,5 +1,5 @@
-#include <tkDecls.h>
 #include "RtreeNode.h"
+
 void RtreeNode::init() {
     for(int i=0; i < R_TREE_NUMBER_CHILDS; i++){
         childNodes[i] = nullptr;
@@ -234,9 +234,8 @@ void RtreeNode::sortByMaxBoundary(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHIL
  * @param k
  * @param dimensions
  * @param margin
- * @return
  */
-float RtreeNode::calculateMargin(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimensions, float& margin) {
+void RtreeNode::calculateMargin(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimensions, float& margin) {
     float minDimValue, maxDimValue;
     for(int i=0; i <= dimensions; i++){ //TODO in case of i == d the finding of whatever it is sorted by
         //TODO put the finding of the margins into a function...

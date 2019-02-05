@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include "DataPointFloat.h"
 #include "Rtree.h"
 
