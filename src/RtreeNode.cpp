@@ -409,12 +409,13 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
  * This function is currently not threadsafe (TODO)
  */
 void RtreeNode::calculateVolume() {
-    if(this->childCount > 1){
-        this->volume = 1.0f;
-        for(int i=0; i < this->dimensions; i++){
-            this->volume *= this->maxBoundaries[i] - this->maxBoundaries[i];
-        }
-    } else {
+#ifdef _DEBUG
+    if(this->childCount < 2) {
         throw std::runtime_error("Can't calculate volume for only one child.");
+    }
+#endif
+    this->volume = 1.0f;
+    for(int i=0; i < this->dimensions; i++) {
+        this->volume *= this->maxBoundaries[i] - this->minBoundaries[i];
     }
 }

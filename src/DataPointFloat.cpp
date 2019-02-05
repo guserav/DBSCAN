@@ -63,9 +63,15 @@ DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.di
 }
 
 /**
- * Non safe access of index. value of the data point. (TODO) Think about adding safety
+ * Non safe access of index. value of the data point.
+ * If BEBUG ist set this is safe.
  */
 float DataPointFloat::operator[](unsigned int index) {
+#ifdef _DEBUG
+    if( index < 0 || index > this->dimensions) {
+        throw std::invalid_argument("index: " + std::to_string(index) + " is out of range of dimensions " + std::to_string(this->dimensions));
+    }
+#endif
     return this->data[index];
 }
 
