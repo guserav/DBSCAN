@@ -26,6 +26,8 @@ RtreeNode::RtreeNode(RtreeNode *firstChild): dimensions(firstChild->dimensions) 
         this->minBoundaries[i] = firstChild->minBoundaries[i];
         this->maxBoundaries[i] = firstChild->maxBoundaries[i];
     }
+    this->childNodes[0] = firstChild;
+    this->childCount = 1;
 }
 
 RtreeNode::RtreeNode(RtreeNode *firstChild, RtreeNode *secondChild): RtreeNode(firstChild) {
@@ -38,6 +40,8 @@ RtreeNode::RtreeNode(DataPointFloat *firstChild): dimensions(firstChild->getDime
         this->minBoundaries[i] = (*firstChild)[i];
         this->maxBoundaries[i] = (*firstChild)[i];
     }
+    this->childLeaves[0] = firstChild;
+    this->childCount = 1;
 }
 
 RtreeNode::~RtreeNode() {
@@ -418,4 +422,31 @@ void RtreeNode::calculateVolume() {
     for(int i=0; i < this->dimensions; i++) {
         this->volume *= this->maxBoundaries[i] - this->minBoundaries[i];
     }
+}
+
+/**
+ * Removes the datapoint from this leave node. If the node to remove doesn't exist nothing happens
+ * @param pFloat A pointer to the leave node to remove
+ * @throws std::runtime_error if this is not a leave node
+ */
+void RtreeNode::removePoint(DataPointFloat *pFloat) {
+    NOT_YET_IMPLEMENTED("Remove data Point");
+}
+
+/**
+ * Replaces the old Point pointer with the new one to don't loose old objects
+ * This function should only be called by the copy constructors of the DataPoint
+ * @param oldPoint the old Pointer to replace
+ * @param newPoint the new Pointer to emplace
+ * @throws
+ * TODO: Look if replacing this to using real objects that are copied impacts performance as no pointers are used and prefetching could do its job
+ */
+void RtreeNode::replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint) {
+    for(int i=0; i < childCount; i++){
+        if(childLeaves[i] == oldPoint){
+            childLeaves[i] = newPoint;
+            return;
+        }
+    }
+    throw std::invalid_argument("Couldn't find old Point within this node");
 }

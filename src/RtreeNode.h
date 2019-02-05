@@ -1,6 +1,8 @@
 #ifndef STUDIENARBEITCODE_RTREENODE_H
 #define STUDIENARBEITCODE_RTREENODE_H
 
+class RtreeNode;
+
 #include "DataPointFloat.h"
 #include <exception>
 #include <cmath>
@@ -25,6 +27,9 @@ public:
 
     RtreeNode * insertNewPoint(DataPointFloat* dataPoint);
     bool hasLeaves();
+
+    void removePoint(DataPointFloat *pFloat);
+    void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
 
 private:
     explicit RtreeNode(unsigned int dimensions);

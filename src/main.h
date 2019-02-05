@@ -4,5 +4,6 @@
 #include <iostream>
 #include <vector>
 #include "DataPointFloat.h"
+#include "Rtree.h"
 
 #endif //STUDIENARBEITCODE_MAIN_H

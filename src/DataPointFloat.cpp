@@ -10,6 +10,7 @@ DataPointFloat::DataPointFloat(const std::string& input, unsigned int dimensions
     std::string item;
 
     cluster = 0;
+    parent = nullptr;
     this->dimensions = dimensions;
     data = new float[dimensions];
 
@@ -25,6 +26,9 @@ DataPointFloat::DataPointFloat(const std::string& input, unsigned int dimensions
 
 DataPointFloat::~DataPointFloat() {
     delete [] data;
+    if(this->parent) {
+        this->parent->removePoint(this);
+    }
 }
 
 DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
@@ -35,6 +39,7 @@ DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
         cluster = obj.cluster;
         data = new float[dimensions];
         std::copy(obj.data, obj.data + dimensions, data);
+        parent = nullptr;
     }
     return *this;
 }
@@ -44,22 +49,33 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
         dimensions = obj.dimensions;
         cluster = obj.cluster;
         data = obj.data;
+        parent = obj.parent;
+
+        if(parent){
+            parent->replaceNode(&obj, this);
+        }
 
         obj.dimensions = 0;
         obj.cluster = 0;
         obj.data = nullptr;
+        obj.parent = nullptr;
     }
     return *this;
 }
 
-DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]) {
+DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]), parent(nullptr) {
     std::copy(obj.data, obj.data + dimensions, data);
 }
 
-DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data) {
+DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data), parent(nullptr) {
     obj.dimensions = 0;
     obj.cluster = 0;
     obj.data = nullptr;
+    obj.parent = nullptr;
+
+    if(parent){
+        parent->replaceNode(&obj, this);
+    }
 }
 
 /**

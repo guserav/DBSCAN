@@ -1,6 +1,7 @@
 #ifndef STUDIENARBEITCODE_RTREE_H
 #define STUDIENARBEITCODE_RTREE_H
 
+class Rtree;
 #include "RtreeNode.h"
 
 class Rtree {

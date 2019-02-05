@@ -1,10 +1,13 @@
 #ifndef STUDIENARBEITCODE_DATAPOINTFLOAT_H
 #define STUDIENARBEITCODE_DATAPOINTFLOAT_H
 
+class DataPointFloat;
 
 #include <stdlib.h>
 #include <stdexcept>
 #include <string>
+
+#include "RtreeNode.h"
 
 class DataPointFloat {
 public:
@@ -22,6 +25,7 @@ private:
     float* data;
     int cluster;
     unsigned int dimensions;
+    RtreeNode * parent;
 };
 
 
