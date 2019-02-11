@@ -539,12 +539,39 @@ void RtreeNode::calculateVolume() {
 }
 
 /**
- * Removes the datapoint from this leave node. If the node to remove doesn't exist nothing happens
- * @param pFloat A pointer to the leave node to remove
+ * Removes the data point from this leave node. If the node to remove doesn't exist nothing happens
+ * This functions assumes that the point is only once in this node
+ * @param point A pointer to the leave node to remove
  * @throws std::runtime_error if this is not a leave node
  */
-void RtreeNode::removePoint(DataPointFloat *pFloat) {
-    NOT_YET_IMPLEMENTED("Remove data Point");
+void RtreeNode::removePoint(DataPointFloat *point) {
+    dropPoint(point);
+    calculateVolume();
+}
+
+/**
+ * Removes the data point from this leave node. If the node to remove doesn't exist nothing happens
+ * This functions assumes that the point is only once in this node
+ * The difference to removePoint is that calculate Point is not called this is to allow for masive drops e.g. on splits
+ * @param point A pointer to the leave node to remove
+ * @throws std::runtime_error if this is not a leave node
+ */
+void RtreeNode::dropPoint(DataPointFloat *point) {
+    for(int i=0; i < childCount; i++){
+        if(childLeaves[i] == point){
+            for(int j=i; j < childCount - 1; j++) {
+                childLeaves[j] = childLeaves[j + 1];
+            }
+            childLeaves[childCount--] = nullptr;
+#ifdef _DEBUG
+            if(this->childCount < R_TREE_MINIMUM_CHILDS) {
+                NOT_YET_IMPLEMENTED("Node contains less than minimum child after removing some, should be merged...");
+            }
+#endif
+            calculateVolume();
+            return;
+        }
+    }
 }
 
 /**
@@ -552,13 +579,14 @@ void RtreeNode::removePoint(DataPointFloat *pFloat) {
  * This function should only be called by the copy constructors of the DataPoint
  * @param oldPoint the old Pointer to replace
  * @param newPoint the new Pointer to emplace
- * @throws
+ * @throws std::invalid_argument when the old Pointer is not contained in here
  * TODO: Look if replacing this to using real objects that are copied impacts performance as no pointers are used and prefetching could do its job
  */
 void RtreeNode::replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint) {
     for(int i=0; i < childCount; i++){
         if(childLeaves[i] == oldPoint){
             childLeaves[i] = newPoint;
+            calculateVolume();
             return;
         }
     }
