@@ -387,6 +387,11 @@ float RtreeNode::calculateVolume(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1],
  * @return  A new node if a split occured
  */
 RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
+#ifdef _DEBUG
+    if(this->childCount > 1 && !this->hasLeaves()) {
+        throw std::runtime_error("This function should only be called on Leave nodes");
+    }
+#endif
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childLeaves[this->childCount++] = child;
         for(int i=0; i < this->dimensions; i++){
@@ -401,7 +406,117 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
         this->calculateVolume();
         return nullptr;
     } else {
-        NOT_YET_IMPLEMENTED("Split Node with leaves");
+        DataPointFloat * allCurrentChilds[R_TREE_NUMBER_CHILDS + 1];
+        float margins[this->dimensions];
+        float minBoundary, maxBoundary;
+        int splitDim = 0;
+        float minArea = std::numeric_limits<float>::max();
+        int splitIndex = 0; //should always be overwritten
+        float area1, area2;
+        RtreeNode * newNode;
+
+        for(int i=0; i < R_TREE_NUMBER_CHILDS; i++) {
+            allCurrentChilds[i] = this->childLeaves[i];
+        }
+        allCurrentChilds[R_TREE_NUMBER_CHILDS] = child;
+
+        for(int d=0; d < this->dimensions; d++){
+            sortAllChildsLeaves(allCurrentChilds, d);
+            margins[d] = 0;
+            for(int k=R_TREE_MINIMUM_CHILDS - 1; k < R_TREE_NUMBER_CHILDS - R_TREE_MINIMUM_CHILDS; k++){
+                for(int i = 0; i < this->dimensions; i++) {
+                    minBoundary = (*allCurrentChilds[0])[i];
+                    maxBoundary = (*allCurrentChilds[0])[i];
+                    for(int j = 0; j <= k; j++){
+                        if(minBoundary > (*allCurrentChilds[j])[i]){
+                            minBoundary = (*allCurrentChilds[j])[i];
+                        } else if(maxBoundary < (*allCurrentChilds[j])[i]){
+                            maxBoundary = (*allCurrentChilds[j])[i];
+                        }
+                    }
+                    margins[d] += maxBoundary - minBoundary;
+                    minBoundary = (*allCurrentChilds[k + 1])[i];
+                    maxBoundary = (*allCurrentChilds[k + 1])[i];
+                    for(int j = k + 2; j < R_TREE_NUMBER_CHILDS + 1; j++){
+                        if(minBoundary > (*allCurrentChilds[j])[i]){
+                            minBoundary = (*allCurrentChilds[j])[i];
+                        } else if(maxBoundary < (*allCurrentChilds[j])[i]){
+                            maxBoundary = (*allCurrentChilds[j])[i];
+                        }
+                    }
+                    margins[d] += maxBoundary - minBoundary;
+                }
+            }
+        }
+
+        // Split dimensions is the dimension with the smallest margins
+        for(int i=1; i < this->dimensions; i++){
+            if(margins[i] < margins[splitDim]){
+                splitDim = i;
+            }
+        }
+
+        //Skip calculating overlap as it is not possible when splitting the points on an axis (sorted by this axis)
+        sortAllChildsLeaves(allCurrentChilds, splitDim);
+        for(int k=R_TREE_MINIMUM_CHILDS - 1; k < R_TREE_NUMBER_CHILDS - R_TREE_MINIMUM_CHILDS; k++){
+            area1 = 1.0f;
+            area2 = 1.0f;
+
+            for(int i = 0; i < this->dimensions; i++) {
+                minBoundary = (*allCurrentChilds[0])[i];
+                maxBoundary = (*allCurrentChilds[0])[i];
+                for(int j = 0; j <= k; j++){
+                    if(minBoundary > (*allCurrentChilds[j])[i]){
+                        minBoundary = (*allCurrentChilds[j])[i];
+                    } else if(maxBoundary < (*allCurrentChilds[j])[i]){
+                        maxBoundary = (*allCurrentChilds[j])[i];
+                    }
+                }
+                area1 *= maxBoundary - minBoundary;
+                minBoundary = (*allCurrentChilds[k + 1])[i];
+                maxBoundary = (*allCurrentChilds[k + 1])[i];
+                for(int j = k + 2; j < R_TREE_NUMBER_CHILDS + 1; j++){
+                    if(minBoundary > (*allCurrentChilds[j])[i]){
+                        minBoundary = (*allCurrentChilds[j])[i];
+                    } else if(maxBoundary < (*allCurrentChilds[j])[i]){
+                        maxBoundary = (*allCurrentChilds[j])[i];
+                    }
+                }
+                area2 *= maxBoundary - minBoundary;
+            }
+
+            if(minArea > area1 + area2) {
+                minArea = area1 + area2;
+                splitIndex = k;
+            }
+        }
+
+        newNode = new RtreeNode(child);
+        for(int i = splitIndex + 1; i < R_TREE_NUMBER_CHILDS; i++) {
+            if(allCurrentChilds[i] == child) continue;
+#ifndef _DEBUG
+            newNode->addLeaveChild(allCurrentChilds[i]);
+#else
+            if(newNode->addLeaveChild(allCurrentChilds[i])){
+                throw std::runtime_error("Splitout node should never split on adding the children");
+            }
+#endif
+        dropPoint(allCurrentChilds[i]);
+        }
+        calculateVolume();
+    }
+}
+
+void RtreeNode::sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d) {
+    bool bubbleSortChangedMarker = true;
+    for(int i = 0; i < R_TREE_NUMBER_CHILDS + 1 && bubbleSortChangedMarker; i++){
+        bubbleSortChangedMarker = false;
+        for(int j=0; j < R_TREE_NUMBER_CHILDS + 1 - i; j++) {
+            if((*allCurrentChilds[i])[d] > (*allCurrentChilds[i + 1])[d]) {
+                std::swap(allCurrentChilds[i], allCurrentChilds[i + 1]);
+                bubbleSortChangedMarker = true;
+            }
+        }
     }
 }
 
