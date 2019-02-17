@@ -55,6 +55,10 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
         obj.cluster = 0;
         obj.data = nullptr;
         obj.parent = nullptr;
+    } else {
+#ifdef _DEBUG
+        throw std::runtime_error("Can't move copy from this");
+#endif
     }
     return *this;
 }
@@ -63,14 +67,20 @@ DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimen
     std::copy(obj.data, obj.data + dimensions, data);
 }
 
-DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data), parent(nullptr) {
-    obj.dimensions = 0;
-    obj.cluster = 0;
-    obj.data = nullptr;
-    obj.parent = nullptr;
+DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data), parent(obj.parent) {
+    if(this != &obj) {
+        obj.dimensions = 0;
+        obj.cluster = 0;
+        obj.data = nullptr;
+        obj.parent = nullptr;
 
-    if(parent){
-        parent->replaceNode(&obj, this);
+        if(parent){
+            parent->replaceNode(&obj, this);
+        }
+    } else {
+#ifdef _DEBUG
+        throw std::runtime_error("Can't move copy from this");
+#endif
     }
 }
 
