@@ -21,6 +21,7 @@ public:
 
     unsigned int getDimensions();
     void setParent(RtreeNode * newParent);
+    float* getData();
 
 private:
     float* data;

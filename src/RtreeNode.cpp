@@ -763,8 +763,20 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
             childLeaves[childCount++] = child;
             child->setParent(this);
         }
+
+        std::copy(childLeaves[0]->getData(), childLeaves[0]->getData() + dimensions, minBoundaries);
+        std::copy(childLeaves[0]->getData(), childLeaves[0]->getData() + dimensions, maxBoundaries);
+        for(int i=1; i < childCount; i++) {
+            for(int d=0; d < dimensions; d++) {
+                if((*childLeaves[i])[d] < minBoundaries[d]) {
+                    minBoundaries[i] = (*childLeaves[i])[d];
+                } else if((*childLeaves[i])[d] > maxBoundaries[d]) {
+                    maxBoundaries[i] = (*childLeaves[i])[d];
+                }
+            }
         }
         calculateVolume();
+        return newNode;
     }
 }
 
