@@ -22,6 +22,7 @@ RtreeNode::RtreeNode(unsigned int dimensions): dimensions(dimensions) {
 
 RtreeNode::RtreeNode(RtreeNode *firstChild): dimensions(firstChild->dimensions) {
     this->init();
+    //TODO replace with std::copy
     for(int i=0; i < dimensions; i++){
         this->minBoundaries[i] = firstChild->minBoundaries[i];
         this->maxBoundaries[i] = firstChild->maxBoundaries[i];
@@ -37,6 +38,7 @@ RtreeNode::RtreeNode(RtreeNode *firstChild, RtreeNode *secondChild): RtreeNode(f
 
 RtreeNode::RtreeNode(DataPointFloat *firstChild): dimensions(firstChild->getDimensions()) {
     this->init();
+    //TODO replace with std::copy
     for(int i=0; i < dimensions; i++){
         this->minBoundaries[i] = (*firstChild)[i];
         this->maxBoundaries[i] = (*firstChild)[i];
