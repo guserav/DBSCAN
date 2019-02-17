@@ -178,7 +178,7 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
     // Insert node
     // On split of child add Child to this node
     // Split if necessary
-    if((newNode = childNodes[chosenIndex]->addLeaveChild(dataPoint)) != nullptr) {
+    if((newNode = childNodes[chosenIndex]->insertNewPoint(dataPoint)) != nullptr) {
         return this->addChild(newNode);
     }
     return nullptr;
@@ -353,8 +353,12 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
             }
         }
         childCount -= splitIndex + R_TREE_MINIMUM_CHILDS;
+        if(!childInLowerHalf) {
+            childNodes[childCount++] = newChild;
+            newChild->parent = this;
+        }
         std::copy(childNodes[0]->minBoundaries, childNodes[0]->minBoundaries + dimensions, minBoundaries);
-        std::copy(childNodes[0]->maxBoundaries, childNodes[0]->maxBoundaries + dimensions, minBoundaries);
+        std::copy(childNodes[0]->maxBoundaries, childNodes[0]->maxBoundaries + dimensions, maxBoundaries);
         for(int i=1; i < childCount; i++) {
             for(int d=0; d < dimensions; d++) {
                 if(childNodes[i]->minBoundaries[d] < minBoundaries[d]) {
