@@ -35,13 +35,15 @@ private:
     explicit RtreeNode(unsigned int dimensions);
     void init();
     static float calculateOverlap(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
+    static float calculateOverlap(const float * s1, const float * e1, const float * s2, const float * e2, unsigned int dimension);
     static float calculateVolume(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
     static void calculateMargin(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension, float& margin);
     static void sortByMinBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     static void sortByMaxBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
+    float calculateEnlargement(DataPointFloat *pFloat);
     void dropPoint(DataPointFloat *pFloat);
     void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
-    void addChild(RtreeNode* child);
+    RtreeNode * addChild(RtreeNode* child);
     RtreeNode* addLeaveChild(DataPointFloat* child);
     void calculateVolume();
 

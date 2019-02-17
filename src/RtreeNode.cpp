@@ -57,12 +57,97 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
     if(hasLeaves()) {
         return this->addLeaveChild(dataPoint);
     }
-
+    int chosenIndex = -1;
+    float areaEnlargement[childCount];
+    float minEnlargement;
+    float area[childCount];
+    float minArea;
+    float minAreaBoundary[dimensions];
+    float maxAreaBoundary[dimensions];
+    RtreeNode * newNode;
     // Find child node to insert into
+    // Choose of subtree depends of depth in the tree
+    if(childNodes[0]->hasLeaves()) {
+        float areaOverlap[childCount];
+        float minOverlap;
+        bool multipleBest = false;
+        //Choose least overlap
+        for(int i=0; i < childCount; i++) {
+            for(int d=0; d < dimensions; d++) {
+                if((*dataPoint)[d] < childNodes[i]->minBoundaries[d]) {
+                    minAreaBoundary[d] = (*dataPoint)[d];
+                    maxAreaBoundary[d] = childNodes[i]->maxBoundaries[d];
+                } else if((*dataPoint)[d] > childNodes[i]->maxBoundaries[d]) {
+                    maxAreaBoundary[d] = (*dataPoint)[d];
+                    minAreaBoundary[d] = childNodes[i]->minBoundaries[d];
+                } else {
+                    minAreaBoundary[d] = childNodes[i]->minBoundaries[d];
+                    maxAreaBoundary[d] = childNodes[i]->maxBoundaries[d];
+                }
+            }
+            areaOverlap[i] = 0.0f;
+            //Skip index i without having to check it every time
+            for(int j=0; j < i; j++){
+                areaOverlap[i] += calculateOverlap(minAreaBoundary, maxAreaBoundary, childNodes[j]->minBoundaries, childNodes[j]->maxBoundaries, dimensions);
+            }
+            for(int j=i + 1; j < childCount; j++) {
+                areaOverlap[i] += calculateOverlap(minAreaBoundary, maxAreaBoundary, childNodes[j]->minBoundaries, childNodes[j]->maxBoundaries, dimensions);
+            }
+        }
+        //Determine least overlap
+        chosenIndex = 0;
+        minOverlap = areaOverlap[0];
+        for(int i=1; i < childCount; i++){
+            if(minOverlap > areaOverlap[i]) {
+                minOverlap = areaOverlap[i];
+                chosenIndex = i;
+                multipleBest = false;
+            } else if(minOverlap == areaOverlap[i]) {
+                multipleBest = true;
+            }
+        }
+        // Determine minimum required Enlargement
+        if(multipleBest) {
+            multipleBest = false;
+            minEnlargement = childNodes[chosenIndex]->calculateEnlargement(dataPoint);
+            areaEnlargement[chosenIndex] = minEnlargement;
+            for(int i=chosenIndex + 1; i<childCount; i++){
+                areaEnlargement[i] = -1.0f; //Set Enlargement to impossible value for determining minimum area to ignore it if not calculated
+                if(minOverlap == areaOverlap[i]) { //Not for nodes that don't have the minimum overlap cost
+                    areaEnlargement[i] = childNodes[i]->calculateEnlargement(dataPoint);
+                    if(areaEnlargement[i] < minEnlargement) {
+                        multipleBest = false;
+                        chosenIndex = i;
+                        minEnlargement = areaEnlargement[i];
+                    } else if(areaEnlargement[i] == minEnlargement) {
+                        multipleBest = true;
+                    }
+                }
+            }
+            // Determine minimumArea
+            if(multipleBest) {
+                minArea = childNodes[chosenIndex]->volume;
+                for(int i=chosenIndex+1; i<childCount; i++) {
+                    if(minEnlargement == areaEnlargement[i]) { // Not for nodes that don't have the minimum enlargement from beforehand
+                        if(minArea > childNodes[i]->volume) {
+                            minArea = childNodes[i]->volume;
+                            chosenIndex = i;
+                        }
+                    }
+                }
+            }
+        }
+    } else { // Node has no leave nodes as childs
+        //Choose least area enlargement then least area
+        //TODO
+        NOT_YET_IMPLEMENTED("Insert New Point");
+    }
     // Insert node
     // On split of child add Child to this node
     // Split if necessary
-    NOT_YET_IMPLEMENTED("Insert New Point");
+    if((newNode = childNodes[chosenIndex]->addLeaveChild(dataPoint)) != nullptr) {
+        return this->addChild(newNode);
+    }
     return nullptr;
 }
 
@@ -80,7 +165,7 @@ bool RtreeNode::hasLeaves() {
  * @param child  the child node to add.
  * @return  A new node if a split occured
  */
-void RtreeNode::addChild(RtreeNode *child) {
+RtreeNode* RtreeNode::addChild(RtreeNode *child) {
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childNodes[this->childCount++] = child;
         for(int i=0; i < this->dimensions; i++){
@@ -336,6 +421,54 @@ float RtreeNode::calculateOverlap(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1]
 }
 
 /**
+ * Returns the area of the overlap described by the handed boundaries
+ * @param s1 the minimum boundaries of the first rectangle
+ * @param e1 the maximum boundaries of the first rectangle
+ * @param s2 the minimum boundaries of the second rectangle
+ * @param e2 the maximum boundaries of the second rectangle
+ * @param dimensions the dimensions the handed areas have
+ * @return
+ */
+float RtreeNode::calculateOverlap(const float *s1, const float *e1, const float *s2, const float *e2, unsigned int dimensions) {
+    float volume = 1.0f;
+    for(int d=0; d < dimensions; d++) {
+        if(s1[d] < s2[d]) {
+            if(s2[d] < e1[d]) {
+                if(e1[d] < e2[d]) {
+                    // s1 --- s2 ooo e1 --- e2
+                    volume *= e1[d] - s2[d];
+                } else { // e1 > e2
+                    // s1 --- s2 ooo e2 --- e1
+                    volume *= e2[d] - s2[d];
+                }
+            } else { // e1 < s2
+                // s1 --- e1 no overlap s2 --- e2
+                return 0.0f;
+            }
+        } else { // s2 < s1
+            if(s1[d] < e2[d]) {
+                if (e2[d] < e1[d]) {
+                    // s2 --- s1 ooo e2 --- e1
+                    volume *= e2[d] - e1[d];
+                } else { //e1 < e2
+                    // s2 --- s1 ooo e1 --- e2
+                    volume *= e1[d] - s1[d];
+                }
+            } else { //e2 < s1
+                // s2 --- e2 no overlap s1 --- e1
+                return 0.0f;
+            }
+        }
+    }
+#ifdef _DEBUG
+    if(volume < 0.0f) {
+        throw std::runtime_error("volume of overlap cannot be less then 0");
+    }
+#endif
+    return volume;
+}
+
+/**
  * Calculates the volume of the two areas described by the bounding boxes of allChilds[0, k] and allChilds[k+1, R_TREE_NUMBER_CHILDS]
  * @param allChilds an array containing a pointer to all childs to consider
  * @param splitIndex the index k to split the childs at
@@ -377,6 +510,23 @@ float RtreeNode::calculateVolume(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1],
     }
 #endif
     return volume1 + volume2;
+}
+
+/**
+ * Calculated the Area Enlargement needed to fit in the datapoint into this node
+ * @param pFloat pointer to the datapoint to add
+ * @return the area enlargement needed
+ */
+float RtreeNode::calculateEnlargement(DataPointFloat *dataPoint) {
+    float enlargement = 0.0f;
+    for(int i=0; i < dimensions; i++){
+        if((*dataPoint)[i] < minBoundaries[i]) {
+            enlargement = (volume + enlargement) * (minBoundaries[i] - (*dataPoint)[i]) / (maxBoundaries[i] - minBoundaries[i]);
+        } else if((*dataPoint)[i] > maxBoundaries[i]) {
+            enlargement = (volume + enlargement) * ((*dataPoint)[i] - maxBoundaries[i]) / (maxBoundaries[i] - minBoundaries[i]);
+        }
+    }
+    return enlargement;
 }
 
 /**
@@ -592,3 +742,4 @@ void RtreeNode::replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint) 
     }
     throw std::invalid_argument("Couldn't find old Point within this node");
 }
+
