@@ -57,20 +57,19 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
     if(hasLeaves()) {
         return this->addLeaveChild(dataPoint);
     }
-    int chosenIndex = -1;
+    int chosenIndex;
     float areaEnlargement[childCount];
     float minEnlargement;
-    float area[childCount];
     float minArea;
     float minAreaBoundary[dimensions];
     float maxAreaBoundary[dimensions];
     RtreeNode * newNode;
+    bool multipleBest = false;
     // Find child node to insert into
     // Choose of subtree depends of depth in the tree
     if(childNodes[0]->hasLeaves()) {
         float areaOverlap[childCount];
         float minOverlap;
-        bool multipleBest = false;
         //Choose least overlap
         for(int i=0; i < childCount; i++) {
             for(int d=0; d < dimensions; d++) {
@@ -126,21 +125,52 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
             }
             // Determine minimumArea
             if(multipleBest) {
-                minArea = childNodes[chosenIndex]->volume;
-                for(int i=chosenIndex+1; i<childCount; i++) {
-                    if(minEnlargement == areaEnlargement[i]) { // Not for nodes that don't have the minimum enlargement from beforehand
-                        if(minArea > childNodes[i]->volume) {
-                            minArea = childNodes[i]->volume;
-                            chosenIndex = i;
+                if(minEnlargement == 0.0f) {
+                    minArea = childNodes[chosenIndex]->volume;
+                    for(int i=chosenIndex+1; i<childCount; i++) {
+                        if(minEnlargement == areaEnlargement[i]) { // Not for nodes that don't have the minimum enlargement from beforehand
+                            if(minArea > childNodes[i]->volume) {
+                                minArea = childNodes[i]->volume;
+                                chosenIndex = i;
+                            }
                         }
                     }
+                } else {
+                    NOT_YET_IMPLEMENTED("Add data point based on area"); //TODO calculate volume with point inserted
                 }
             }
         }
     } else { // Node has no leave nodes as childs
         //Choose least area enlargement then least area
-        //TODO
-        NOT_YET_IMPLEMENTED("Insert New Point");
+        multipleBest = false;
+        chosenIndex = 0;
+        minEnlargement = childNodes[0]->calculateEnlargement(dataPoint);
+        areaEnlargement[0] = minEnlargement;
+        for(int i = 1; i < childCount; i++) {
+            areaEnlargement[i] = childNodes[i]->calculateEnlargement(dataPoint);
+            if(areaEnlargement[i] < minEnlargement) {
+                multipleBest = false;
+                chosenIndex = i;
+                minEnlargement = areaEnlargement[i];
+            } else if(minEnlargement == areaEnlargement[i]) {
+                multipleBest = true;
+            }
+        }
+        if(multipleBest) { //Determine minimum area
+            if(minEnlargement == 0.0f) {
+                minArea = childNodes[chosenIndex]->volume;
+                for(int i = chosenIndex + 1; i < childCount; i++) {
+                    if(minEnlargement == areaEnlargement[i]) { // Only check minimum area if node belongs to minimum area enlargement
+                        if(minArea < childNodes[i]->volume) {
+                            chosenIndex = i;
+                            minArea = childNodes[i]->volume;
+                        }
+                    }
+                }
+            } else {
+                NOT_YET_IMPLEMENTED("Add data point based on area"); //TODO calculate volume with point inserted
+            }
+        }
     }
     // Insert node
     // On split of child add Child to this node
@@ -162,21 +192,22 @@ bool RtreeNode::hasLeaves() {
  *
  * This functions assumes that there are allready other children and the min/max boundaries are proberly set
  * This should only be called when a split happened and is therefor private.
- * @param child  the child node to add.
+ * @param newChild  the child node to add.
  * @return  A new node if a split occured
  */
-RtreeNode* RtreeNode::addChild(RtreeNode *child) {
+RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
     if(childCount < R_TREE_NUMBER_CHILDS) {
-        this->childNodes[this->childCount++] = child;
+        this->childNodes[this->childCount++] = newChild;
         for(int i=0; i < this->dimensions; i++){
-            if(this->maxBoundaries[i] < child->maxBoundaries[i]) {
-                this->maxBoundaries[i] = child->maxBoundaries[i];
-            } else if(this->minBoundaries[i] > child->minBoundaries[i]) {
-                this->minBoundaries[i] = child->minBoundaries[i];
+            if(this->maxBoundaries[i] < newChild->maxBoundaries[i]) {
+                this->maxBoundaries[i] = newChild->maxBoundaries[i];
+            } else if(this->minBoundaries[i] > newChild->minBoundaries[i]) {
+                this->minBoundaries[i] = newChild->minBoundaries[i];
             }
         }
         //TODO think about calculating volume in the code above on extension? This may result in better performance
         this->calculateVolume();
+        return nullptr;
     } else {
         float sumMargins[this->dimensions];
         int splitDim = 0;
@@ -186,7 +217,7 @@ RtreeNode* RtreeNode::addChild(RtreeNode *child) {
         for(int i=0; i < R_TREE_NUMBER_CHILDS; i++) {
             allCurrentChilds[i] = this->childNodes[i];
         }
-        allCurrentChilds[R_TREE_NUMBER_CHILDS] = child;
+        allCurrentChilds[R_TREE_NUMBER_CHILDS] = newChild;
 
         for(int d=0; d < this->dimensions; d++){
             //Calculate the sum of all margins for all possible splits allong the axis d for the minimum Boundaries
@@ -229,21 +260,24 @@ RtreeNode* RtreeNode::addChild(RtreeNode *child) {
         float minOverlap = overlapValue[0][0];
         bool isInMins = true;
         int splitIndex = 0; // + R_TREE_NUMBER_CHILDS - 1 to get split index
-        int amountOfFits = 1;
+        bool multipleFits = false;
         for(int i = 0; i < 2; i++) {
             for(int j = 0; j < R_TREE_NUMBER_SORTS; j++){
                 if(minOverlap > overlapValue[i][j]) {
                     minOverlap = overlapValue[i][j];
                     isInMins = i == 0;
                     splitIndex = j;
-                    amountOfFits = 1;
+                    multipleFits = false;
                 } else if (minOverlap == overlapValue[i][j]) {
-                    amountOfFits++;
+                    multipleFits = true;
                 }
             }
         }
-        if(amountOfFits > 1) {
-            float minVolume = -1.0f; //Maker for later on
+
+        if(multipleFits) { //If there are nodes with the same minimum overlap choose among then with minimum volume
+            float minVolume;
+            int startIndex;
+            float tempVolume;
             //Skip calculating mins if the first minOverlap was in the maximums
             if(isInMins) {
                 //Start calculating minimum Volume from first match
@@ -252,26 +286,80 @@ RtreeNode* RtreeNode::addChild(RtreeNode *child) {
                 //allCurrentChilds is still sorted for minBoundaries therefor start for them
                 for(int i = splitIndex + 1; i < R_TREE_NUMBER_SORTS; i++){
                     if(minOverlap == overlapValue[0][i]){
-                        NOT_YET_IMPLEMENTED("Split Node without leaves");
-                        //TODO set minimum index
-                        calculateVolume(allCurrentChilds, i + R_TREE_MINIMUM_CHILDS - 1, this->dimensions);
+                        tempVolume = calculateVolume(allCurrentChilds, i + R_TREE_MINIMUM_CHILDS - 1, this->dimensions);
+                        if(tempVolume < minVolume) {
+                            splitIndex = i;
+                            minVolume = tempVolume;
+                        }
+                    }
+                }
+                startIndex = 0;
+            } else { //Ignore all minimum splits
+                startIndex = splitIndex + 1;
+                minVolume = calculateVolume(allCurrentChilds, splitIndex  + R_TREE_MINIMUM_CHILDS - 1, this->dimensions);
+            }
+            sortByMaxBoundary(allCurrentChilds, splitDim);
+            for(int i = startIndex; i < R_TREE_NUMBER_SORTS; i++){
+                if(minOverlap == overlapValue[0][i]){
+                    tempVolume = calculateVolume(allCurrentChilds, i + R_TREE_MINIMUM_CHILDS - 1, this->dimensions);
+                    if(tempVolume < minVolume) {
+                        splitIndex = i;
+                        minVolume = tempVolume;
+                        isInMins = false;
                     }
                 }
             }
-            sortByMaxBoundary(allCurrentChilds, splitDim);
-            if(minVolume == -1.0f){
-                minVolume = calculateVolume(allCurrentChilds, splitIndex  + R_TREE_MINIMUM_CHILDS - 1, this->dimensions);
+            if(isInMins) {
+                sortByMinBoundary(allCurrentChilds, splitDim);
             }
-            NOT_YET_IMPLEMENTED("Split Node without leaves");
-            //TODO do the same as above for the maximum
+        } else { // Ensure that the data is sorted in the correct orientation
+            if(!isInMins) {
+                sortByMaxBoundary(allCurrentChilds, splitDim);
+            }
+        }
+        //Assuming that the data is sorted in respect to the best split condition
+        //Do split at index splitIndex + R_TREE_MINIMUM_CHILDS - 1
+        RtreeNode * newNode = new RtreeNode(allCurrentChilds[0]);
+        for(int i=1; i < splitIndex + R_TREE_MINIMUM_CHILDS; i++) {
+#ifdef _DEBUG
+            if(newNode->addChild(allCurrentChilds[i]) != nullptr) throw std::runtime_error("Doesn't expect new Node to split on adding childs");
+#else
+            newNode->addChild(allCurrentChilds[i]);
+#endif
+        }
+        for(int i=0; i < splitIndex + R_TREE_MINIMUM_CHILDS; i++){
+            if(allCurrentChilds[i] != newChild) {
+                for(int j=0; j < childCount; j++){
+                    if(allCurrentChilds[i] == childNodes[i]) {
+                        childNodes[i] = nullptr;
+                    }
+                }
+            }
         }
 
-        //If childs are no longer sorted for the respective min/max Boundary do that
-
-        //TODO Split at index k
-        //TODO Create new Node with all children starting from k + 1 and remove the added children from this node
-        //TODO implement further from here
-        NOT_YET_IMPLEMENTED("Split Node without leaves");
+        //Compress dropped childs
+        int j = 0;
+        for(int i=0; i < childCount; i++) {
+            if(childNodes[i] != nullptr) {
+                childNodes[j] = childNodes[i];
+                j++;
+            }
+        }
+        childCount -= splitIndex + R_TREE_MINIMUM_CHILDS;
+        std::copy(childNodes[0]->minBoundaries, childNodes[0]->minBoundaries + dimensions, minBoundaries);
+        std::copy(childNodes[0]->maxBoundaries, childNodes[0]->maxBoundaries + dimensions, minBoundaries);
+        for(int i=1; i < childCount; i++) {
+            for(int d=0; d < dimensions; d++) {
+                if(childNodes[i]->minBoundaries[d] < minBoundaries[d]) {
+                    minBoundaries[i] = childNodes[i]->minBoundaries[d];
+                }
+                if(childNodes[i]->maxBoundaries[d] > maxBoundaries[d]) {
+                    maxBoundaries[i] = childNodes[i]->maxBoundaries[d];
+                }
+            }
+        }
+        calculateVolume();
+        return newNode;
     }
 }
 

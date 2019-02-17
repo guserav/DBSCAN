@@ -43,7 +43,7 @@ private:
     float calculateEnlargement(DataPointFloat *pFloat);
     void dropPoint(DataPointFloat *pFloat);
     void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
-    RtreeNode * addChild(RtreeNode* child);
+    RtreeNode * addChild(RtreeNode* newChild);
     RtreeNode* addLeaveChild(DataPointFloat* child);
     void calculateVolume();
 
