@@ -20,6 +20,7 @@ public:
     ~DataPointFloat();
 
     unsigned int getDimensions();
+    void setParent(RtreeNode * newParent);
 
 private:
     float* data;

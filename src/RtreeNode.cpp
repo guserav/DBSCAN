@@ -28,6 +28,7 @@ RtreeNode::RtreeNode(RtreeNode *firstChild): dimensions(firstChild->dimensions) 
     }
     this->childNodes[0] = firstChild;
     this->childCount = 1;
+    firstChild->parent = this;
 }
 
 RtreeNode::RtreeNode(RtreeNode *firstChild, RtreeNode *secondChild): RtreeNode(firstChild) {
@@ -42,6 +43,7 @@ RtreeNode::RtreeNode(DataPointFloat *firstChild): dimensions(firstChild->getDime
     }
     this->childLeaves[0] = firstChild;
     this->childCount = 1;
+    firstChild->setParent(this);
 }
 
 RtreeNode::~RtreeNode() {
@@ -51,6 +53,7 @@ RtreeNode::~RtreeNode() {
         delete childNodes[i];
         delete childLeaves[i];
     }
+    //TODO remove from parentNode
 }
 
 RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
@@ -198,6 +201,7 @@ bool RtreeNode::hasLeaves() {
 RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childNodes[this->childCount++] = newChild;
+        newChild->parent = this;
         for(int i=0; i < this->dimensions; i++){
             if(this->maxBoundaries[i] < newChild->maxBoundaries[i]) {
                 this->maxBoundaries[i] = newChild->maxBoundaries[i];
@@ -327,6 +331,7 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
             newNode->addChild(allCurrentChilds[i]);
 #endif
         }
+        bool childInLowerHalf = false;
         for(int i=0; i < splitIndex + R_TREE_MINIMUM_CHILDS; i++){
             if(allCurrentChilds[i] != newChild) {
                 for(int j=0; j < childCount; j++){
@@ -334,6 +339,8 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
                         childNodes[i] = nullptr;
                     }
                 }
+            } else {
+                childInLowerHalf = true;
             }
         }
 
@@ -626,12 +633,13 @@ float RtreeNode::calculateEnlargement(DataPointFloat *dataPoint) {
  */
 RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
 #ifdef _DEBUG
-    if(this->childCount > 1 && !this->hasLeaves()) {
+    if(this->childCount > 0 && !this->hasLeaves()) {
         throw std::runtime_error("This function should only be called on Leave nodes");
     }
 #endif
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childLeaves[this->childCount++] = child;
+        child->setParent(this);
         for(int i=0; i < this->dimensions; i++){
             if(this->maxBoundaries[i] < (*child)[i]) {
                 this->maxBoundaries[i] = (*child)[i];
@@ -729,9 +737,20 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
             }
         }
 
-        newNode = new RtreeNode(child);
-        for(int i = splitIndex + 1; i < R_TREE_NUMBER_CHILDS; i++) {
-            if(allCurrentChilds[i] == child) continue;
+        //TODO make drop of point less complex
+        bool nodeInLowerHalf = true;
+        newNode = new RtreeNode(allCurrentChilds[splitIndex + 1]);
+        if(allCurrentChilds[splitIndex + 1] != child) {
+            dropPoint(allCurrentChilds[splitIndex + 1]);
+        } else {
+            nodeInLowerHalf = false;
+        }
+        for(int i = splitIndex + 2; i < R_TREE_NUMBER_CHILDS; i++) {
+            if(allCurrentChilds[i] == child) {
+                nodeInLowerHalf = false;
+            } else {
+                dropPoint(allCurrentChilds[i]);
+            }
 #ifndef _DEBUG
             newNode->addLeaveChild(allCurrentChilds[i]);
 #else
@@ -739,7 +758,11 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
                 throw std::runtime_error("Splitout node should never split on adding the children");
             }
 #endif
-        dropPoint(allCurrentChilds[i]);
+        }
+        if(nodeInLowerHalf) {
+            childLeaves[childCount++] = child;
+            child->setParent(this);
+        }
         }
         calculateVolume();
     }

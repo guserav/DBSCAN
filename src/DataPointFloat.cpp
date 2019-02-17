@@ -101,3 +101,6 @@ unsigned int DataPointFloat::getDimensions() {
     return this->dimensions;
 }
 
+void DataPointFloat::setParent(RtreeNode *newParent) {
+    this->parent = newParent;
+}
