@@ -873,7 +873,19 @@ void RtreeNode::dropPoint(DataPointFloat *point) {
  * TODO: Look if replacing this to using real objects that are copied impacts performance as no pointers are used and prefetching could do its job
  */
 void RtreeNode::replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint) {
-    for(int i=0; i < childCount; i++){
+#ifdef _DEBUG
+    if(!hasLeaves()) {
+        throw std::runtime_error("Replace node cannot be called on a non Leave node");
+    }
+#endif
+    if(childLeaves[0] == oldPoint) {
+        childLeaves[0] = newPoint;
+        if(childCount > 1) { // Don't calculate volume when only having one child
+            calculateVolume();
+        }
+        return;
+    }
+    for(int i=1; i < childCount; i++){
         if(childLeaves[i] == oldPoint){
             childLeaves[i] = newPoint;
             calculateVolume();
