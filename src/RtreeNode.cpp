@@ -663,6 +663,11 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
             } else if(this->minBoundaries[i] > (*child)[i]) {
                 this->minBoundaries[i] = (*child)[i];
             }
+#ifdef _DEBUG
+            if(this->minBoundaries[i] > this->maxBoundaries[i]) {
+                throw std::runtime_error("The minimum Boundary should never be bigger then the maximum why?");
+            }
+#endif
         }
         //TODO think about calculating volume within the loop above (performance, but maybe not thread safe)
         //TODO also consider not calculating volume here as this function maybe used in fast paste for adding multiple children at the same time
