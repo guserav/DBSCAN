@@ -183,6 +183,7 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
     if((newNode = childNodes[chosenIndex]->insertNewPoint(dataPoint)) != nullptr) {
         return this->addChild(newNode);
     }
+    NOT_YET_IMPLEMENTED("Enlarge area of this node based of the new child");
     return nullptr;
 }
 
