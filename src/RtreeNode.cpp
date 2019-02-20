@@ -503,7 +503,7 @@ float RtreeNode::calculateOverlap(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1]
             if(s1 < e2) {
                 if (e2 < e1) {
                     // s2 --- s1 ooo e2 --- e1
-                    volume *= e2 - e1;
+                    volume *= e2 - s1;
                 } else { //e1 < e2
                     // s2 --- s1 ooo e1 --- e2
                     volume *= e1 - s1;
@@ -534,6 +534,11 @@ float RtreeNode::calculateOverlap(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1]
 float RtreeNode::calculateOverlap(const float *s1, const float *e1, const float *s2, const float *e2, unsigned int dimensions) {
     float volume = 1.0f;
     for(int d=0; d < dimensions; d++) {
+#ifdef _DEBUG
+        if(s1[d] > e1[d] || s2[d] > e2[d]) {
+            throw std::invalid_argument("Wrong use of minimum and maximum boundaries in calculating the overlap: Please check order of parameter");
+        }
+#endif
         if(s1[d] < s2[d]) {
             if(s2[d] < e1[d]) {
                 if(e1[d] < e2[d]) {
@@ -551,7 +556,7 @@ float RtreeNode::calculateOverlap(const float *s1, const float *e1, const float 
             if(s1[d] < e2[d]) {
                 if (e2[d] < e1[d]) {
                     // s2 --- s1 ooo e2 --- e1
-                    volume *= e2[d] - e1[d];
+                    volume *= e2[d] - s1[d];
                 } else { //e1 < e2
                     // s2 --- s1 ooo e1 --- e2
                     volume *= e1[d] - s1[d];
@@ -561,6 +566,11 @@ float RtreeNode::calculateOverlap(const float *s1, const float *e1, const float 
                 return 0.0f;
             }
         }
+#ifdef _DEBUG
+        if(volume < 0.0f) {
+            throw std::runtime_error("volume of overlap cannot be less then 0");
+        }
+#endif
     }
 #ifdef _DEBUG
     if(volume < 0.0f) {
