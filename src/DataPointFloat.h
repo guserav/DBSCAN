@@ -11,7 +11,7 @@ class DataPointFloat;
 
 class DataPointFloat {
 public:
-    DataPointFloat(const std::string& input, unsigned int dimensions, char delim);
+    DataPointFloat(std::string input, unsigned int dimensions, char delim);
     DataPointFloat(const DataPointFloat& obj); // copy constructor
     DataPointFloat(DataPointFloat&& obj) noexcept; // move constructor
     DataPointFloat& operator=(const DataPointFloat& obj); //copy assignment

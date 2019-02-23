@@ -1,8 +1,7 @@
 #include "DataPointFloat.h"
 
-DataPointFloat::DataPointFloat(const std::string& input, unsigned int dimensions, char delim) {
+DataPointFloat::DataPointFloat(std::string input, unsigned int dimensions, char delim) {
     size_t endPos;
-    std::string cut = input;
     std::string item;
 
     cluster = 0;
@@ -13,11 +12,11 @@ DataPointFloat::DataPointFloat(const std::string& input, unsigned int dimensions
     for(int i = 0; i < dimensions - 1; i++){
         endPos = input.find(delim);
         if(endPos == std::string::npos) throw std::invalid_argument("Can't parse input couldn't find delim in input");
-        item = cut.substr(0, endPos);
-        cut = cut.substr(endPos + 1, std::string::npos);
+        item = input.substr(0, endPos);
+        input = input.substr(endPos + 1, std::string::npos);
         data[i] = std::stof(item);
     }
-    data[dimensions - 1] = std::stof(cut);
+    data[dimensions - 1] = std::stof(input);
 }
 
 DataPointFloat::~DataPointFloat() {
