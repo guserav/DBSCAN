@@ -20,6 +20,15 @@ DataPointFloat::DataPointFloat(std::string input, unsigned int dimensions, char 
 }
 
 DataPointFloat::~DataPointFloat() {
+    destruct();
+}
+
+/**
+ * Free all used resources and clear references to this object.
+ *
+ * Should only be used by move constructors and destructor.
+ */
+void DataPointFloat::destruct(){
     delete [] data;
     if(this->parent) {
         this->parent->removePoint(this);
@@ -28,7 +37,7 @@ DataPointFloat::~DataPointFloat() {
 
 DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
     if(this != &obj){
-        delete [] data;
+        destruct();
 
         dimensions = obj.dimensions;
         cluster = obj.cluster;
@@ -41,6 +50,8 @@ DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
 
 DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
     if(this != &obj){
+        destruct();
+
         dimensions = obj.dimensions;
         cluster = obj.cluster;
         data = obj.data;

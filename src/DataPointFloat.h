@@ -28,6 +28,7 @@ private:
     int cluster;
     unsigned int dimensions;
     RtreeNode * parent; //TODO Use it by implementing it on adding to the R*_tree
+    void destruct();
 };
 
 
