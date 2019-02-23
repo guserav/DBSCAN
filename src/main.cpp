@@ -8,12 +8,12 @@ void dbscan(const char* filename, unsigned int dimensions, char delim){
     }
     std::vector<DataPointFloat> datapoints;
     std::getline(file, line);
-    datapoints.emplace_back(DataPointFloat(line, dimensions, delim));
+    datapoints.emplace_back(line, dimensions, delim);
     Rtree tree(dimensions, datapoints.data());
 
     while (std::getline(file, line)){
         if(!line.empty()){
-            datapoints.emplace_back(DataPointFloat(line, dimensions, delim));
+            datapoints.emplace_back(line, dimensions, delim);
             tree.addDataPoint(datapoints.data() + datapoints.size() - 1);
         }
     }
