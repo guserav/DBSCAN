@@ -5,7 +5,6 @@ DataPointFloat::DataPointFloat(std::string input, unsigned int dimensions, char 
     std::string item;
 
     cluster = 0;
-    parent = nullptr;
     this->dimensions = dimensions;
     data = new float[dimensions];
 

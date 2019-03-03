@@ -52,8 +52,11 @@ RtreeNode::~RtreeNode() {
     delete [] minBoundaries;
     delete [] maxBoundaries;
     for(int i=0; i < R_TREE_NUMBER_CHILDS; i++){
+        if(childNodes[i]) childNodes[i]->parent = nullptr;
         delete childNodes[i];
-        delete childLeaves[i];
+        if(childLeaves[i]) childLeaves[i]->setParent(nullptr);
+        // Don't clear child leaves as they are held by something else
+        //delete childLeaves[i];
     }
     //TODO remove from parentNode
 }
