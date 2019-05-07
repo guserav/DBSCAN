@@ -66,7 +66,10 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
         obj.parent = nullptr;
     } else {
 #ifdef _DEBUG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wterminate"
         throw std::runtime_error("Can't move copy from this");
+#pragma GCC diagnostic pop
 #endif
     }
     return *this;
@@ -88,7 +91,10 @@ DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.di
         }
     } else {
 #ifdef _DEBUG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wterminate"
         throw std::runtime_error("Can't move copy from this");
+#pragma GCC diagnostic pop
 #endif
     }
 }
