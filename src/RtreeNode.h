@@ -59,6 +59,7 @@ private:
     RtreeNode* childNodes[R_TREE_NUMBER_CHILDS];
     DataPointFloat* childLeaves[R_TREE_NUMBER_CHILDS];
 
+    void recalculateBoundaries();
 };
 
 

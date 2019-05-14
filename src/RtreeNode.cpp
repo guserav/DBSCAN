@@ -792,20 +792,33 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
             child->setParent(this);
         }
 
-        std::copy(childLeaves[0]->getData(), childLeaves[0]->getData() + dimensions, minBoundaries);
-        std::copy(childLeaves[0]->getData(), childLeaves[0]->getData() + dimensions, maxBoundaries);
-        for(int i=1; i < childCount; i++) {
-            for(int d=0; d < dimensions; d++) {
-                if((*childLeaves[i])[d] < minBoundaries[d]) {
-                    minBoundaries[i] = (*childLeaves[i])[d];
-                } else if((*childLeaves[i])[d] > maxBoundaries[d]) {
-                    maxBoundaries[i] = (*childLeaves[i])[d];
-                }
-            }
-        }
-        calculateVolume();
+        recalculateBoundaries();
         return newNode;
     }
+}
+
+/**
+ * Recalculate the boundaries based of the childs currently present.
+ * Hereby the values currently in min and maxBoundaries are ignored as there are assumed to be not valid
+ */
+void RtreeNode::recalculateBoundaries() {
+    float * toCopy = childLeaves[0]->getData();
+    std::copy(toCopy, toCopy + dimensions, minBoundaries);
+    std::copy(minBoundaries, minBoundaries + dimensions, maxBoundaries);
+    for (int i = 1; i < childCount; i++) {
+        for (int d = 0; d < dimensions; d++) {
+            float value = (*(childLeaves[i]))[d];
+            if (value < minBoundaries[d]) {
+                minBoundaries[d] = value;
+            } else if (value > maxBoundaries[d]) {
+                maxBoundaries[d] = value;
+            }
+        }
+#ifdef _DEBUG
+        checkIntegrity();
+#endif
+    }
+    calculateVolume();
 }
 
 void RtreeNode::sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d) {
