@@ -62,6 +62,9 @@ RtreeNode::~RtreeNode() {
 }
 
 RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
+#ifdef _DEBUG
+    this->checkIntegrity();
+#endif
     if(hasLeaves()) {
         return this->addLeaveChild(dataPoint);
     }
@@ -826,6 +829,7 @@ void RtreeNode::sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMB
  */
 void RtreeNode::calculateVolume() {
 #ifdef _DEBUG
+    this->checkIntegrity();
     if(this->childCount < 2) {
         throw std::runtime_error("Can't calculate volume for only one child.");
     }
@@ -902,4 +906,31 @@ void RtreeNode::replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint) 
     }
     throw std::invalid_argument("Couldn't find old Point within this node");
 }
+
+#ifdef _DEBUG
+/**
+ * Debug function to check the integrity of this object
+ */
+void RtreeNode::checkIntegrity() {
+    for(int i = 0; i < this->dimensions; i++) {
+        if(this->minBoundaries[i] > this->maxBoundaries[i]) {
+            throw std::runtime_error("Boundaries of this object don't match (negative expansion)");
+        }
+    }
+    if(this->volume < 0) {
+        throw std::runtime_error("Negative volume seems odd.");
+    }
+    for(int i = 0; i < this->childCount; i++) {
+        if(this->hasLeaves()) {
+            if(this->childLeaves[i] == nullptr) {
+                throw std::runtime_error("Expecting child here");
+            }
+        } else {
+            if(this->childNodes[i] == nullptr) {
+                throw std::runtime_error("Expecting child here");
+            }
+        }
+    }
+}
+#endif
 

@@ -46,6 +46,9 @@ private:
     RtreeNode * addChild(RtreeNode* newChild);
     RtreeNode* addLeaveChild(DataPointFloat* child);
     void calculateVolume();
+#ifdef _DEBUG
+    void checkIntegrity();
+#endif
 
     char childCount = 0;
     float volume = 0;
