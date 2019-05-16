@@ -391,11 +391,11 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
 void RtreeNode::sortByMinBoundary(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d){
     //TODO For now a bubble sort... Maybe change this later on
     bool bubbleSortChangedMarker = true;
-    for(int i = 0; i < R_TREE_NUMBER_CHILDS + 1 && bubbleSortChangedMarker; i++){
+    for(int i = R_TREE_NUMBER_CHILDS; i > 0 && bubbleSortChangedMarker; i--){
         bubbleSortChangedMarker = false;
-        for(int j=0; j < R_TREE_NUMBER_CHILDS + 1 - i; j++) {
-            if(allCurrentChilds[i]->minBoundaries[d] > allCurrentChilds[i + 1]->minBoundaries[d]) {
-                std::swap(allCurrentChilds[i], allCurrentChilds[i + 1]);
+        for(int j=0; j < i; j++) {
+            if(allCurrentChilds[j]->minBoundaries[d] > allCurrentChilds[j + 1]->minBoundaries[d]) {
+                std::swap(allCurrentChilds[j], allCurrentChilds[j + 1]);
                 bubbleSortChangedMarker = true;
             }
         }
@@ -410,11 +410,11 @@ void RtreeNode::sortByMinBoundary(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHIL
 void RtreeNode::sortByMaxBoundary(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d){
     //TODO For now a bubble sort... Maybe change this later on
     bool bubbleSortChangedMarker = true;
-    for(int i = 0; i < R_TREE_NUMBER_CHILDS + 1 && bubbleSortChangedMarker; i++){
+    for(int i = R_TREE_NUMBER_CHILDS; i > 0 && bubbleSortChangedMarker; i--){
         bubbleSortChangedMarker = false;
-        for(int j=0; j < R_TREE_NUMBER_CHILDS + 1 - i; j++) {
-            if(allCurrentChilds[i]->maxBoundaries[d] > allCurrentChilds[i + 1]->maxBoundaries[d]) {
-                std::swap(allCurrentChilds[i], allCurrentChilds[i + 1]);
+        for(int j=0; j < i; j++) {
+            if(allCurrentChilds[j]->maxBoundaries[d] > allCurrentChilds[j + 1]->maxBoundaries[d]) {
+                std::swap(allCurrentChilds[j], allCurrentChilds[j + 1]);
                 bubbleSortChangedMarker = true;
             }
         }
@@ -809,11 +809,11 @@ void RtreeNode::recalculateBoundaries() {
 
 void RtreeNode::sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d) {
     bool bubbleSortChangedMarker = true;
-    for(int i = 0; i < R_TREE_NUMBER_CHILDS + 1 && bubbleSortChangedMarker; i++){
+    for(int i = R_TREE_NUMBER_CHILDS; i > 0 && bubbleSortChangedMarker; i--){
         bubbleSortChangedMarker = false;
-        for(int j=0; j < R_TREE_NUMBER_CHILDS + 1 - i; j++) {
-            if((*allCurrentChilds[i])[d] > (*allCurrentChilds[i + 1])[d]) {
-                std::swap(allCurrentChilds[i], allCurrentChilds[i + 1]);
+        for(int j=0; j < i; j++) {
+            if((*allCurrentChilds[j])[d] > (*allCurrentChilds[j + 1])[d]) {
+                std::swap(allCurrentChilds[j], allCurrentChilds[j + 1]);
                 bubbleSortChangedMarker = true;
             }
         }
