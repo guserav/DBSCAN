@@ -45,6 +45,7 @@ private:
     void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     RtreeNode * addChild(RtreeNode* newChild);
     RtreeNode* addLeaveChild(DataPointFloat* child);
+    void expandForNewChild(DataPointFloat* child);
     void calculateVolume();
 #ifdef _DEBUG
     void checkIntegrity();
