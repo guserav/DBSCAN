@@ -371,10 +371,10 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
         for(int i=1; i < childCount; i++) {
             for(int d=0; d < dimensions; d++) {
                 if(childNodes[i]->minBoundaries[d] < minBoundaries[d]) {
-                    minBoundaries[i] = childNodes[i]->minBoundaries[d];
+                    minBoundaries[d] = childNodes[i]->minBoundaries[d];
                 }
                 if(childNodes[i]->maxBoundaries[d] > maxBoundaries[d]) {
-                    maxBoundaries[i] = childNodes[i]->maxBoundaries[d];
+                    maxBoundaries[d] = childNodes[i]->maxBoundaries[d];
                 }
             }
         }
