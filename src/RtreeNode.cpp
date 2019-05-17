@@ -954,3 +954,31 @@ void RtreeNode::expandForNewChild(DataPointFloat *child) {
         this->calculateVolume();
     }
 }
+
+void RtreeNode::printToConsole(int level) {
+    for(int i = 0; i < level; i++) {
+        std::cout << "    ";
+    }
+    std::cout << "[" << std::to_string(reinterpret_cast<long long>(this)) << "] parent: ["
+            << std::to_string(reinterpret_cast<long long>(this->parent)) << "] childs: [";
+    for(int i = 0; i < R_TREE_NUMBER_CHILDS; i++) {
+        if(i < this->childCount) {
+            std::cout << "\033[1;30m";
+        } else {
+            std::cout << "\033[0m";
+        }
+        if(this->hasLeaves()) {
+            std::cout << std::to_string(reinterpret_cast<long long>(this->childLeaves[i])) << ", ";
+        } else {
+            std::cout << std::to_string(reinterpret_cast<long long>(this->childNodes[i])) << ", ";
+        }
+    }
+    std::cout << "\033[0m]\n";
+    for(int i = 0; i < childCount; i++) {
+        if (this->hasLeaves()) {
+            this->childLeaves[i]->printToConsole(level + 1);
+        } else {
+            this->childNodes[i]->printToConsole(level + 1);
+        }
+    }
+}

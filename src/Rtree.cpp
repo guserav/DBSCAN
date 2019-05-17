@@ -30,3 +30,7 @@ void Rtree::addDataPoint(DataPointFloat *point) {
     }
 }
 
+void Rtree::printToConsole() {
+    this->root->printToConsole(0);
+}
+

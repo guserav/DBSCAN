@@ -18,6 +18,7 @@ void dbscan(const char* filename, unsigned int dimensions, char delim){
         }
     }
     std::cout << "Done reading file" << std::endl;
+    tree.printToConsole();
 }
 
 int main() {

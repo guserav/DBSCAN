@@ -124,3 +124,18 @@ float *DataPointFloat::getData() {
     return data;
 }
 
+void DataPointFloat::printToConsole(int level) {
+    for(int i = 0; i < level; i++) {
+        std::cout << "    ";
+    }
+    if(this->dimensions <= 0) {
+        std::cout << "[]\n";
+        return;
+    }
+
+    std::cout << "[";
+    for(int i = 0; i < this->dimensions - 1; i++) {
+        std::cout << std::to_string(data[i]) << ", ";
+    }
+    std::cout << std::to_string(data[this->dimensions - 1]) << "]\n";
+}

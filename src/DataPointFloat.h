@@ -23,6 +23,8 @@ public:
     void setParent(RtreeNode * newParent);
     float* getData();
 
+    void printToConsole(int level);
+
 private:
     float* data;
     int cluster;

@@ -6,6 +6,7 @@ class RtreeNode;
 #include "DataPointFloat.h"
 #include <exception>
 #include <cmath>
+#include <iostream>
 
 // Use odd number to avoid edge case for insertion
 #define R_TREE_NUMBER_CHILDS 10
@@ -30,6 +31,8 @@ public:
 
     void removePoint(DataPointFloat *pFloat);
     void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
+
+    void printToConsole(int level);
 
 private:
     explicit RtreeNode(unsigned int dimensions);
