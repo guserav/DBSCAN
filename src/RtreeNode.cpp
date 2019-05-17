@@ -260,13 +260,13 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
 
         //First for maxBoundaries because it could be sorted from the last dimension if splitDim == dimensions - 1
         sortByMaxBoundary(allCurrentChilds, splitDim);
-        for(int k=R_TREE_MINIMUM_CHILDS - 1; k < R_TREE_NUMBER_CHILDS - R_TREE_MINIMUM_CHILDS; k++){
-            overlapValue[1][k - R_TREE_NUMBER_CHILDS + 1] = calculateOverlap(allCurrentChilds, k, dimensions);
+        for(int k=0; k < R_TREE_NUMBER_SORTS; k++){
+            overlapValue[1][k] = calculateOverlap(allCurrentChilds, k + R_TREE_MINIMUM_CHILDS - 1, dimensions);
         }
         //Second for minBoundaries
         sortByMinBoundary(allCurrentChilds, splitDim);
-        for(int k=R_TREE_MINIMUM_CHILDS - 1; k < R_TREE_NUMBER_CHILDS - R_TREE_MINIMUM_CHILDS; k++){
-            overlapValue[0][k - R_TREE_NUMBER_CHILDS + 1] = calculateOverlap(allCurrentChilds, k, dimensions);
+        for(int k=0; k < R_TREE_NUMBER_SORTS; k++){
+            overlapValue[0][k] = calculateOverlap(allCurrentChilds, k + R_TREE_MINIMUM_CHILDS - 1, dimensions);
         }
 
         //Find minimum overlap distribution
