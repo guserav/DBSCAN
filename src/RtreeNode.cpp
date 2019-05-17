@@ -208,9 +208,9 @@ bool RtreeNode::hasLeaves() {
  * @return  A new node if a split occured
  */
 RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
+    newChild->parent = this; // Set this regardless of whether the child will be a part of this node as it is to annoying to make a case later
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childNodes[this->childCount++] = newChild;
-        newChild->parent = this;
         for(int i=0; i < this->dimensions; i++){
             if(this->maxBoundaries[i] < newChild->maxBoundaries[i]) {
                 this->maxBoundaries[i] = newChild->maxBoundaries[i];
@@ -331,41 +331,21 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
             }
         }
         //Assuming that the data is sorted in respect to the best split condition
-        //Do split at index splitIndex + R_TREE_MINIMUM_CHILDS - 1
-        RtreeNode * newNode = new RtreeNode(allCurrentChilds[0]);
-        for(int i=1; i < splitIndex + R_TREE_MINIMUM_CHILDS; i++) {
+        //Do split after index splitIndex + R_TREE_MINIMUM_CHILDS - 1
+
+        // Put all nodes higher then the split in new node
+        RtreeNode * newNode = new RtreeNode(allCurrentChilds[splitIndex + R_TREE_MINIMUM_CHILDS]);
+        allCurrentChilds[splitIndex + R_TREE_MINIMUM_CHILDS] = nullptr;
+        for(int i=splitIndex + R_TREE_MINIMUM_CHILDS + 1; i < R_TREE_NUMBER_CHILDS + 1; i++) {
 #ifdef _DEBUG
             if(newNode->addChild(allCurrentChilds[i]) != nullptr) throw std::runtime_error("Doesn't expect new Node to split on adding childs");
 #else
             newNode->addChild(allCurrentChilds[i]);
 #endif
+            allCurrentChilds[i] = nullptr; // Ensure that non used child Node array slots are set to null
         }
-        bool childInLowerHalf = false;
-        for(int i=0; i < splitIndex + R_TREE_MINIMUM_CHILDS; i++){
-            if(allCurrentChilds[i] != newChild) {
-                for(int j=0; j < childCount; j++){
-                    if(allCurrentChilds[i] == childNodes[i]) {
-                        childNodes[i] = nullptr;
-                    }
-                }
-            } else {
-                childInLowerHalf = true;
-            }
-        }
-
-        //Compress dropped childs
-        int j = 0;
-        for(int i=0; i < childCount; i++) {
-            if(childNodes[i] != nullptr) {
-                childNodes[j] = childNodes[i];
-                j++;
-            }
-        }
-        childCount -= splitIndex + R_TREE_MINIMUM_CHILDS;
-        if(!childInLowerHalf) {
-            childNodes[childCount++] = newChild;
-            newChild->parent = this;
-        }
+        this->childCount = splitIndex + R_TREE_MINIMUM_CHILDS;
+        std::copy(allCurrentChilds, allCurrentChilds + R_TREE_NUMBER_CHILDS, childNodes);
         std::copy(childNodes[0]->minBoundaries, childNodes[0]->minBoundaries + dimensions, minBoundaries);
         std::copy(childNodes[0]->maxBoundaries, childNodes[0]->maxBoundaries + dimensions, maxBoundaries);
         for(int i=1; i < childCount; i++) {
@@ -660,9 +640,9 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
         throw std::runtime_error("This function should only be called on Leave nodes");
     }
 #endif
+    child->setParent(this); // Needed anyway and doing it later requires a lot of logic and pain
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childLeaves[this->childCount++] = child;
-        child->setParent(this);
         this->expandForNewChild(child);
         return nullptr;
     } else {
@@ -752,19 +732,9 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
         }
 
         //TODO make drop of point less complex
-        bool nodeInLowerHalf = true;
         newNode = new RtreeNode(allCurrentChilds[splitIndex + 1]);
-        if(allCurrentChilds[splitIndex + 1] != child) {
-            dropPoint(allCurrentChilds[splitIndex + 1]);
-        } else {
-            nodeInLowerHalf = false;
-        }
-        for(int i = splitIndex + 2; i < R_TREE_NUMBER_CHILDS; i++) {
-            if(allCurrentChilds[i] == child) {
-                nodeInLowerHalf = false;
-            } else {
-                dropPoint(allCurrentChilds[i]);
-            }
+        allCurrentChilds[splitIndex + 1] = nullptr;
+        for(int i = splitIndex + 2; i < R_TREE_NUMBER_CHILDS + 1; i++) {
 #ifndef _DEBUG
             newNode->addLeaveChild(allCurrentChilds[i]);
 #else
@@ -772,12 +742,10 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
                 throw std::runtime_error("Splitout node should never split on adding the children");
             }
 #endif
+            allCurrentChilds[i] = nullptr;
         }
-        if(nodeInLowerHalf) {
-            childLeaves[childCount++] = child;
-            child->setParent(this);
-        }
-
+        this->childCount = splitIndex + 1;
+        std::copy(allCurrentChilds, allCurrentChilds + R_TREE_NUMBER_CHILDS, this->childLeaves);
         recalculateBoundaries();
         return newNode;
     }
@@ -919,15 +887,18 @@ void RtreeNode::checkIntegrity() {
     if(this->volume < 0) {
         throw std::runtime_error("Negative volume seems odd.");
     }
-    for(int i = 0; i < this->childCount; i++) {
+    for(int i = 0; i < R_TREE_NUMBER_CHILDS; i++) {
+        bool foundChild;
         if(this->hasLeaves()) {
-            if(this->childLeaves[i] == nullptr) {
-                throw std::runtime_error("Expecting child here");
-            }
+            foundChild = this->childLeaves[i] != nullptr;
         } else {
-            if(this->childNodes[i] == nullptr) {
-                throw std::runtime_error("Expecting child here");
-            }
+            foundChild = this->childNodes[i] != nullptr;
+        }
+        if(foundChild && i >= this->childCount) {
+            throw std::runtime_error("Not Expecting child here");
+        }
+        if(!foundChild && i < this->childCount) {
+            throw std::runtime_error("Expecting child here");
         }
     }
 }
