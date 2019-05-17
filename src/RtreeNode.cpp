@@ -183,13 +183,13 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
             }
         }
     }
-    this->expandForNewChild(dataPoint);
     // Insert node
     // On split of child add Child to this node
     // Split if necessary
     if((newNode = childNodes[chosenIndex]->insertNewPoint(dataPoint)) != nullptr) {
         return this->addChild(newNode);
     }
+    this->expandForNewChild(dataPoint); // Do this here as addChild will expand the Boundaries by itself
     return nullptr;
 }
 
