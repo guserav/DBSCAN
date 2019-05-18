@@ -6,5 +6,6 @@
 #include <fstream>
 #include "DataPointFloat.h"
 #include "Rtree.h"
+#include "DBSCAN.h"
 
 #endif //STUDIENARBEITCODE_MAIN_H
