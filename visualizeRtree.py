@@ -10,6 +10,7 @@ parser.add_argument("output", nargs='?', type=str, default="plot.png")
 parser.add_argument("-d", "--delim", nargs='?', help="Delimiter to use for splitting point coordinates", default=";")
 parser.add_argument("-r", "--split", nargs='?', help="(Regex) to use for splitting several points an depth", default=",|:")
 parser.add_argument("-s", "--strip", nargs='?', help="Strip these characters away from points on both sides", default="[]\n")
+parser.add_argument("--visualizeDepth", nargs='?', help="Visualize the following depths", default=">1")
 parser.add_argument("--dpi", type=int, default=2400)
 args = parser.parse_args()
 
@@ -41,7 +42,11 @@ for line in list(args.input)[::1]:
             split2[1],
             split1[1]]
         depth = int(lineSplit[0])
-        if depth > 1:
-            plt.plot(a, b, colors[depth], linewidth=1/(2*depth+1))
+        if args.visualizeDepth[0] == '>':
+            if depth > int(args.visualizeDepth[1:]):
+                plt.plot(a, b, colors[depth], linewidth=1/(2*depth+1))
+        elif args.visualizeDepth[0] == '<':
+            if depth < int(args.visualizeDepth[1:]):
+                plt.plot(a, b, colors[depth], linewidth=1/(2*depth+1))
 plt.plot(x, y, 'k.-',linewidth=0, markersize=1/5, markeredgewidth=1/5)
 plt.savefig('plot.png', dpi=args.dpi)
