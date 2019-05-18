@@ -616,15 +616,22 @@ float RtreeNode::calculateVolume(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1],
  * @return the area enlargement needed
  */
 float RtreeNode::calculateEnlargement(DataPointFloat *dataPoint) {
-    float enlargement = 0.0f;
+    float newVolume = 1.0f;
     for(int i=0; i < dimensions; i++){
         if((*dataPoint)[i] < minBoundaries[i]) {
-            enlargement = (volume + enlargement) * (minBoundaries[i] - (*dataPoint)[i]) / (maxBoundaries[i] - minBoundaries[i]);
+            newVolume *= maxBoundaries[i] - (*dataPoint)[i];
         } else if((*dataPoint)[i] > maxBoundaries[i]) {
-            enlargement = (volume + enlargement) * ((*dataPoint)[i] - maxBoundaries[i]) / (maxBoundaries[i] - minBoundaries[i]);
+            newVolume *= (*dataPoint)[i] - minBoundaries[i];
+        } else {
+            newVolume *= maxBoundaries[i] - minBoundaries[i];
         }
     }
-    return enlargement;
+#ifdef _DEBUG
+    if(newVolume < volume) {
+        throw std::runtime_error("New Volume cannot be less then current volume.");
+    }
+#endif
+    return newVolume - volume;
 }
 
 /**
@@ -705,7 +712,7 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
             for(int i = 0; i < this->dimensions; i++) {
                 minBoundary = (*allCurrentChilds[0])[i];
                 maxBoundary = (*allCurrentChilds[0])[i];
-                for(int j = 0; j <= k; j++){
+                for(int j = 1; j <= k; j++){
                     if(minBoundary > (*allCurrentChilds[j])[i]){
                         minBoundary = (*allCurrentChilds[j])[i];
                     } else if(maxBoundary < (*allCurrentChilds[j])[i]){
@@ -747,6 +754,11 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
         this->childCount = splitIndex + 1;
         std::copy(allCurrentChilds, allCurrentChilds + R_TREE_NUMBER_CHILDS, this->childLeaves);
         recalculateBoundaries();
+#ifdef _DEBUG
+        if(newNode->minBoundaries[splitDim] < this->maxBoundaries[splitDim]) {
+            throw std::runtime_error("Chould be a space at the split");
+        }
+#endif
         return newNode;
     }
 }
