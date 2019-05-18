@@ -32,8 +32,12 @@ public:
     void removePoint(DataPointFloat *pFloat);
     void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
 
+    void getNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
+    void addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * caller, DataPointFloat *pFloat, float epsilon);
+
     void printToConsole(int level);
     void printForVisualisation(int level);
+
 
 private:
     explicit RtreeNode(unsigned int dimensions);
@@ -65,6 +69,8 @@ private:
     DataPointFloat* childLeaves[R_TREE_NUMBER_CHILDS];
 
     void recalculateBoundaries();
+
+    bool overlapsEpsNeighbourhood(DataPointFloat *pFloat, float epsilon);
 };
 
 

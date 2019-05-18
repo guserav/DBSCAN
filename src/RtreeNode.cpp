@@ -984,3 +984,78 @@ void RtreeNode::printForVisualisation(int level) {
         }
     }
 }
+
+/**
+ * Return a list of neighbours to the specified point. This function should only be called on leaves.
+ * @param list the list to add found neighbours to
+ * @param pFloat The point to find neighbors to
+ * @param epsilon The epsilon to compare the distance to
+ */
+void RtreeNode::getNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon) {
+#ifdef _DEBUG
+    if(!this->hasLeaves()) {
+        throw std::runtime_error("This function should only be called on Leave nodes. How has a dataPoint a NonLeave as parent");
+    }
+#endif
+    for(int i = 0; i < this->childCount; i++) {
+        if(this->childLeaves[i] != pFloat){
+            if(pFloat->getDistance(childLeaves[i]) < epsilon) {
+                list.push_back(childLeaves[i]);
+            }
+        }
+    }
+    if(parent) parent->addNeighbours(list, this, pFloat, epsilon);
+}
+
+/**
+ * Adds all eps-neighbours to the given point into the given list
+ * @param list the list to add into
+ * @param caller the calling node to prevent loops
+ * @param pFloat the point to check around
+ * @param epsilon the size of the neighbourhood
+ */
+void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * caller, DataPointFloat *pFloat, float epsilon){
+    if(this->hasLeaves()) {
+        for(int i = 0; i < this->childCount; i++) {
+            if(pFloat->getDistance(childLeaves[i]) < epsilon) {
+                list.push_back(childLeaves[i]);
+            }
+        }
+    } else {
+        for(int i = 0; i < this->childCount; i++) {
+            if(this->childNodes[i] != caller) {
+                if(this->childNodes[i]->overlapsEpsNeighbourhood(pFloat, epsilon)) {
+                    this->childNodes[i]->addNeighbours(list, this, pFloat, epsilon);
+                }
+            }
+        }
+    }
+    if(parent && parent != caller) parent->addNeighbours(list, this, pFloat, epsilon);
+}
+
+/**
+ * Returns whether this node could possibly contain any children that can be in the eps-neighbourhood of the point.
+ *
+ * Note: This function does the check assuming max norm as this is faster and easior to write.
+ * @param pFloat the point to check for
+ * @param epsilon the size oof the area to check
+ * @return true if it is possible the child are contained in the area
+ */
+bool RtreeNode::overlapsEpsNeighbourhood(DataPointFloat *pFloat, float epsilon) {
+    epsilon = std::sqrt(epsilon); // TODO test whether it is faster to do this the other way around
+    for(int d = 0; d < this->dimensions; d++){
+        if((*pFloat)[d] < this->maxBoundaries[d]) {
+            if((*pFloat)[d] < this->minBoundaries[d]) {
+                if((*pFloat)[d] < this->minBoundaries[d] - epsilon) {
+                    return false;
+                }
+            }
+            // point is in the boundaries respective to d
+        } else {
+            if((*pFloat)[d] > this->maxBoundaries[d] + epsilon) {
+                return false;
+            }
+        }
+    }
+    return true;
+}

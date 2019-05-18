@@ -3,6 +3,7 @@
 
 class Rtree;
 #include "RtreeNode.h"
+#include "DataPointFloat.h"
 
 class Rtree {
 public:
