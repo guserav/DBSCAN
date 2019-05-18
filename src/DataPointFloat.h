@@ -24,6 +24,7 @@ public:
     float* getData();
 
     void printToConsole(int level);
+    void printForVisualisation(int level);
 
 private:
     float* data;

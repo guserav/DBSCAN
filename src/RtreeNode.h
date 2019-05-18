@@ -33,6 +33,7 @@ public:
     void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
 
     void printToConsole(int level);
+    void printForVisualisation(int level);
 
 private:
     explicit RtreeNode(unsigned int dimensions);

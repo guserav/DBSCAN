@@ -953,3 +953,22 @@ void RtreeNode::printToConsole(int level) {
         }
     }
 }
+
+void RtreeNode::printForVisualisation(int level) {
+    std::cout << std::to_string(level) << ":[" << std::to_string(minBoundaries[0]);
+    for(int i = 1; i < this->dimensions; i++){
+        std::cout << ";" << std::to_string(minBoundaries[i]);
+    }
+    std::cout << "],[" << std::to_string(maxBoundaries[0]);
+    for(int i = 1; i < this->dimensions; i++){
+        std::cout << ";" << std::to_string(maxBoundaries[i]);
+    }
+    std::cout << "]\n";
+    for(int i = 0; i < childCount; i++) {
+        if (this->hasLeaves()) {
+            this->childLeaves[i]->printForVisualisation(level + 1);
+        } else {
+            this->childNodes[i]->printForVisualisation(level + 1);
+        }
+    }
+}

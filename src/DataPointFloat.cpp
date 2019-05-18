@@ -139,3 +139,11 @@ void DataPointFloat::printToConsole(int level) {
     }
     std::cout << std::to_string(data[this->dimensions - 1]) << "]\n";
 }
+
+void DataPointFloat::printForVisualisation(int level) {
+    std::cout << std::to_string(level) << ":[" << std::to_string(data[0]);
+    for(int i = 1; i < this->dimensions; i++){
+        std::cout << ";" << std::to_string(data[i]);
+    }
+    std::cout << "]\n";
+}

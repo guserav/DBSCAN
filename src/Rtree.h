@@ -16,6 +16,7 @@ public:
     void addDataPoint(DataPointFloat * point);
 
     void printToConsole();
+    void printForVisualisation();
 private:
     unsigned int dimensions;
     RtreeNode * root; // This object is not longer valid if root is nullptr

@@ -34,3 +34,7 @@ void Rtree::printToConsole() {
     this->root->printToConsole(0);
 }
 
+void Rtree::printForVisualisation() {
+    this->root->printForVisualisation(0);
+}
+
