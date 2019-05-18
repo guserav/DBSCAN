@@ -22,6 +22,7 @@ public:
 
     unsigned int getDimensions();
     void setParent(RtreeNode * newParent);
+    RtreeNode * getParent();
     float* getData();
     bool isUnClassified();
     bool isNoise();

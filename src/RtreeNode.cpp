@@ -903,8 +903,18 @@ void RtreeNode::checkIntegrity() {
         bool foundChild;
         if(this->hasLeaves()) {
             foundChild = this->childLeaves[i] != nullptr;
+            if (foundChild) {
+                if (this->childLeaves[i]->getParent() != this) {
+                    throw std::runtime_error("This child seems to have the wrong parent.");
+                }
+            }
         } else {
             foundChild = this->childNodes[i] != nullptr;
+            if (foundChild) {
+                if (this->childNodes[i]->parent != this) {
+                    throw std::runtime_error("This child seems to have the wrong parent.");
+                }
+            }
         }
         if(foundChild && i >= this->childCount) {
             throw std::runtime_error("Not Expecting child here");

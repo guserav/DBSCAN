@@ -119,6 +119,10 @@ void DataPointFloat::setParent(RtreeNode *newParent) {
     this->parent = newParent;
 }
 
+RtreeNode * DataPointFloat::getParent() {
+    return this->parent;
+}
+
 float *DataPointFloat::getData() {
     return data;
 }
