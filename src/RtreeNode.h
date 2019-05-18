@@ -70,7 +70,7 @@ private:
 
     void recalculateBoundaries();
 
-    bool overlapsEpsNeighbourhood(DataPointFloat *pFloat, float epsilon);
+    float distanceToBoundaries(DataPointFloat *pFloat);
 };
 
 

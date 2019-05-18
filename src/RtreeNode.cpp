@@ -1034,7 +1034,7 @@ void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * cal
     } else {
         for(int i = 0; i < this->childCount; i++) {
             if(this->childNodes[i] != caller) {
-                if(this->childNodes[i]->overlapsEpsNeighbourhood(pFloat, epsilon)) {
+                if(this->childNodes[i]->distanceToBoundaries(pFloat) < epsilon) {
                     this->childNodes[i]->addNeighbours(list, this, pFloat, epsilon);
                 }
             }
@@ -1044,28 +1044,23 @@ void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * cal
 }
 
 /**
- * Returns whether this node could possibly contain any children that can be in the eps-neighbourhood of the point.
+ * Returns the distance of the point to boundary of this nodes boundaries.
  *
- * Note: This function does the check assuming max norm as this is faster and easior to write.
  * @param pFloat the point to check for
  * @param epsilon the size oof the area to check
  * @return true if it is possible the child are contained in the area
  */
-bool RtreeNode::overlapsEpsNeighbourhood(DataPointFloat *pFloat, float epsilon) {
-    epsilon = std::sqrt(epsilon); // TODO test whether it is faster to do this the other way around
+float RtreeNode::distanceToBoundaries(DataPointFloat *pFloat) {
+    float distance = 0.0f;
     for(int d = 0; d < this->dimensions; d++){
         if((*pFloat)[d] < this->maxBoundaries[d]) {
             if((*pFloat)[d] < this->minBoundaries[d]) {
-                if((*pFloat)[d] < this->minBoundaries[d] - epsilon) {
-                    return false;
-                }
+                distance += std::pow((*pFloat)[d] - this->minBoundaries[d], 2);
             }
             // point is in the boundaries respective to d
         } else {
-            if((*pFloat)[d] > this->maxBoundaries[d] + epsilon) {
-                return false;
-            }
+            distance += std::pow((*pFloat)[d] - this->maxBoundaries[d], 2);
         }
     }
-    return true;
+    return distance;
 }
