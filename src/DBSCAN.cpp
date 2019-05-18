@@ -39,7 +39,7 @@ void DBSCAN::dbscan(const char* filename, unsigned int dimensions, char delim, f
                 }
                 if(currentNode->isUnClassified()){
                     currentNode->setCluster(currentCluster);
-                    std::list<DataPointFloat*> neighbours = seed.getNeighbours(epsilon);
+                    std::list<DataPointFloat*> neighbours = currentNode->getNeighbours(epsilon);
                     if(neighbours.size() < minPts) continue;
                     for(DataPointFloat* point : neighbours) {
                         toDiscover.push_back(point);
