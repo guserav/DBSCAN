@@ -39,4 +39,6 @@ build/
 .idea/
 
 # ignore datafiles
+data/
+out/
 *.data
