@@ -33,6 +33,5 @@ for line in args.input:
     data["y"].append(float(split[1]))
     clusterDict[int(split[2])] = data
 for cluster, data in clusterDict.items():
-    plt.scatter(data["x"], data["y"], marker='.', c=getColor(cluster))
-    #plt.plot(data["x"], data["y"], linewidth=0, markersize=1/5, markeredgewidth=1/5, c=(0, 0, 0))
+    plt.plot(data["x"], data["y"], marker='.', linewidth=0, markersize=1/5, markeredgewidth=1/5, c=getColor(cluster))
 plt.savefig(args.output, dpi=args.dpi)
