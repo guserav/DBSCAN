@@ -6,8 +6,8 @@ import sys
 import random
 
 parser = argparse.ArgumentParser()
-parser.add_argument("input", nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-parser.add_argument("output", nargs='?', type=str, default="plot.png")
+parser.add_argument("-i", "--input", nargs='?', type=argparse.FileType('r'), default=sys.stdin)
+parser.add_argument("-o", "--output", nargs='?', type=str, default="plot.png")
 parser.add_argument("-d", "--delim", nargs='?', help="Delimiter to use for splitting point coordinates", default=";")
 parser.add_argument("-s", "--strip", nargs='?', help="Strip these characters away from points on both sides", default="[]\n")
 parser.add_argument("--dpi", type=int, default=2400)
@@ -35,4 +35,4 @@ for line in args.input:
 for cluster, data in clusterDict.items():
     plt.scatter(data["x"], data["y"], marker='.', c=getColor(cluster))
     #plt.plot(data["x"], data["y"], linewidth=0, markersize=1/5, markeredgewidth=1/5, c=(0, 0, 0))
-plt.savefig('plot.png', dpi=args.dpi)
+plt.savefig(args.output, dpi=args.dpi)
