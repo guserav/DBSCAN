@@ -136,18 +136,14 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
             }
             // Determine minimumArea
             if(multipleBest) {
-                if(minEnlargement == 0.0f) {
-                    minArea = childNodes[chosenIndex]->volume;
-                    for(int i=chosenIndex+1; i<childCount; i++) {
-                        if(minEnlargement == areaEnlargement[i]) { // Not for nodes that don't have the minimum enlargement from beforehand
-                            if(minArea > childNodes[i]->volume) {
-                                minArea = childNodes[i]->volume;
-                                chosenIndex = i;
-                            }
+                minArea = childNodes[chosenIndex]->volume;
+                for(int i=chosenIndex+1; i<childCount; i++) {
+                    if(minEnlargement == areaEnlargement[i]) { // Not for nodes that don't have the minimum enlargement from beforehand
+                        if(minArea > childNodes[i]->volume) { // No need to add already known constant enlargement
+                            minArea = childNodes[i]->volume;
+                            chosenIndex = i;
                         }
                     }
-                } else {
-                    NOT_YET_IMPLEMENTED("Add data point based on area"); //TODO calculate volume with point inserted
                 }
             }
         }
@@ -168,18 +164,14 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
             }
         }
         if(multipleBest) { //Determine minimum area
-            if(minEnlargement == 0.0f) {
-                minArea = childNodes[chosenIndex]->volume;
-                for(int i = chosenIndex + 1; i < childCount; i++) {
-                    if(minEnlargement == areaEnlargement[i]) { // Only check minimum area if node belongs to minimum area enlargement
-                        if(minArea < childNodes[i]->volume) {
-                            chosenIndex = i;
-                            minArea = childNodes[i]->volume;
-                        }
+            minArea = childNodes[chosenIndex]->volume;
+            for(int i = chosenIndex + 1; i < childCount; i++) {
+                if(minEnlargement == areaEnlargement[i]) { // Only check minimum area if node belongs to minimum area enlargement
+                    if(minArea < childNodes[i]->volume) { // No need to add already known constant enlargement
+                        chosenIndex = i;
+                        minArea = childNodes[i]->volume;
                     }
                 }
-            } else {
-                NOT_YET_IMPLEMENTED("Add data point based on area"); //TODO calculate volume with point inserted
             }
         }
     }
