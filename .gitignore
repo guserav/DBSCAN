@@ -33,6 +33,7 @@
 
 # Build directories
 cmake-build-debug/
+cmake-build-release/
 build/
 
 # IDE
