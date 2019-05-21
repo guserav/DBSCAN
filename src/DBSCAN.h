@@ -12,7 +12,7 @@
 #include "Rtree.h"
 
 namespace DBSCAN {
-    void dbscan(const char* filename, unsigned int dimensions, char delim, float epsilon, int minPts);
+    void dbscan(const std::string& filename, unsigned int dimensions, char delim, float epsilon, int minPts);
 }
 
 

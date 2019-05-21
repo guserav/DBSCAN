@@ -1,6 +1,6 @@
 #include "DBSCAN.h"
 
-void DBSCAN::dbscan(const char* filename, unsigned int dimensions, char delim, float epsilon, int minPts){
+void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char delim, float epsilon, int minPts){
     epsilon = epsilon * epsilon; // As euclidian distance is used this saves a lot of sqrt calls TODO discuss in paper
     std::string line;
     std::ifstream file(filename);
