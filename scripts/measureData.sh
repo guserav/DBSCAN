@@ -1,3 +1,4 @@
+#! /usr/bin/env bash
 set -e
 program="build/StudienarbeitCode"
 mode="single"

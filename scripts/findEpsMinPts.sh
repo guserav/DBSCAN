@@ -1,4 +1,4 @@
-#! bash
+#! /usr/bin/env bash
 
 for eps in $(seq $4 $5 $6)
 do
