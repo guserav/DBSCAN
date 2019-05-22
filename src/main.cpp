@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     int minPts = std::stoi(argv[8], nullptr, 10);
 
     for (int i = 0; i < 2; i++) {
-        DBSCAN::dbscan(dataFile, dimensions, delim, epsilon, minPts);
+        DBSCAN::dbscan(dataFile, dimensions, delim, epsilon, minPts, false);
     }
 
     std::chrono::high_resolution_clock::time_point startTime, endTime;
