@@ -1,13 +1,13 @@
 #! /usr/bin/env bash
 set -e
-program="build/StudienarbeitCode"
-mode="single"
-sta=1 # Thread count
-step=1
-end=64
+program=$1
+mode=$2
+sta=$3 # Thread count
+step=$4
+end=$5
 
-runs=20 # Per thread
-task_name="dbscan"
+runs=$6 # Per thread
+task_name=$7
 set OMP_DYNAMIC=0
 
 data=(blobs circles noise)
