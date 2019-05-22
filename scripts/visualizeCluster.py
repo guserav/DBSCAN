@@ -11,6 +11,7 @@ parser.add_argument("-o", "--output", nargs='?', type=str, default="plot.png")
 parser.add_argument("-d", "--delim", nargs='?', help="Delimiter to use for splitting point coordinates", default=";")
 parser.add_argument("-s", "--strip", nargs='?', help="Strip these characters away from points on both sides", default="[]\n")
 parser.add_argument("--dpi", type=int, default=2400)
+parser.add_argument("--marker-size", type=float, default=1/5, dest="marker_size")
 args = parser.parse_args()
 
 colors = ["black", (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0.5, 0, 0.5), (0, 0.5, 0.5),
@@ -33,5 +34,5 @@ for line in args.input:
     data["y"].append(float(split[1]))
     clusterDict[int(split[2])] = data
 for cluster, data in clusterDict.items():
-    plt.plot(data["x"], data["y"], marker='.', linewidth=0, markersize=1/5, markeredgewidth=1/5, c=getColor(cluster))
+    plt.plot(data["x"], data["y"], marker='.', linewidth=0, markersize=args.marker_size, markeredgewidth=args.marker_size, c=getColor(cluster))
 plt.savefig(args.output, dpi=args.dpi)
