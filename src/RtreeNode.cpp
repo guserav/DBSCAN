@@ -402,7 +402,7 @@ void RtreeNode::sortByMaxBoundary(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHIL
  */
 void RtreeNode::calculateMargin(RtreeNode *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimensions, float& margin) {
     float minDimValue, maxDimValue;
-    for(int i=0; i <= dimensions; i++){ //TODO in case of i == d the finding of whatever it is sorted by
+    for(int i=0; i < dimensions; i++){ //TODO in case of i == d the finding of whatever it is sorted by
         //TODO put the finding of the margins into a function...
         minDimValue = allCurrentChilds[0]->minBoundaries[i];
         maxDimValue = allCurrentChilds[0]->maxBoundaries[i];
@@ -439,7 +439,7 @@ float RtreeNode::calculateOverlap(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1]
     float volume = 1.0f;
     //boundaries of the current dimensions (1: [0, k], 2: [k+1, R_TREE_NUMBER_CHILDS])
     float s1, s2, e1, e2;
-    for(int i=0; i <= dimensions; i++){ //TODO in case of i == d the finding of minDim can be optimised...
+    for(int i=0; i < dimensions; i++){ //TODO in case of i == d the finding of minDim can be optimised...
         //First determine the boundaries of the two rectangles
         s1 = allChilds[0]->minBoundaries[i];
         e1 = allChilds[0]->maxBoundaries[i];

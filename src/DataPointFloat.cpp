@@ -104,7 +104,7 @@ DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.di
  */
 float DataPointFloat::operator[](unsigned int index) {
 #ifdef _DEBUG
-    if( index < 0 || index > this->dimensions) {
+    if( index < 0 || index >= this->dimensions) {
         throw std::invalid_argument("index: " + std::to_string(index) + " is out of range of dimensions " + std::to_string(this->dimensions));
     }
 #endif
