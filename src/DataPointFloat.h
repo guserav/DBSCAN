@@ -29,6 +29,7 @@ public:
     std::list<DataPointFloat*> getNeighbours(float epsilon);
     float getDistance(DataPointFloat *pFloat);
     void setCluster(int cluster);
+    int getCluster();
 
     void printToConsole(int level);
     void printForVisualisation(int level);

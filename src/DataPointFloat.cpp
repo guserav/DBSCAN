@@ -195,6 +195,10 @@ void DataPointFloat::setCluster(int cluster) {
     this->cluster = cluster;
 }
 
+int DataPointFloat::getCluster() {
+    return this->cluster;
+}
+
 bool DataPointFloat::isNoise() {
     return this->cluster == NOISE;
 }

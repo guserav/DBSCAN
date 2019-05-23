@@ -45,6 +45,11 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
                         toDiscover.push_back(point);
                     }
                 }
+#ifdef _DEBUG
+                if(currentNode->getCluster() != currentCluster) {
+                    throw std::runtime_error("This should be in the current cluster right now");
+                }
+#endif
             }
         }
     }
