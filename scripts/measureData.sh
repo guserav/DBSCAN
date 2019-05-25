@@ -13,6 +13,10 @@ set OMP_DYNAMIC=0
 data=(blobs circles noise)
 eps=("0.1" "0.1" "0.2")
 minPts=(5 5 2)
+
+touch ~/REQUEST_CPU
+sleep 10
+
 echo "program=${program} start=${sta} step=${step} end=${end} runs=${runs} task_name=${task_name}" >&2
 
 for i in ${!data[*]}
@@ -30,3 +34,4 @@ do
     fi
 done
 
+rm ~/REQUEST_CPU
