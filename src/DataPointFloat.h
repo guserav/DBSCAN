@@ -21,8 +21,6 @@ public:
     ~DataPointFloat();
 
     unsigned int getDimensions();
-    void setParent(RtreeNode * newParent);
-    RtreeNode * getParent();
     float* getData();
     bool isUnClassified();
     bool isNoise();
@@ -38,7 +36,6 @@ private:
     float* data;
     int cluster = UNCLASSIFIED;
     unsigned int dimensions;
-    RtreeNode * parent = nullptr; //TODO Use it by implementing it on adding to the R*_tree
     void destruct();
 };
 

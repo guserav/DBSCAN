@@ -28,9 +28,6 @@ DataPointFloat::~DataPointFloat() {
  */
 void DataPointFloat::destruct(){
     delete [] data;
-    if(this->parent) {
-        this->parent->removePoint(this);
-    }
 }
 
 DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
@@ -41,7 +38,6 @@ DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
         cluster = obj.cluster;
         data = new float[dimensions];
         std::copy(obj.data, obj.data + dimensions, data);
-        parent = nullptr;
     }
     return *this;
 }
@@ -53,16 +49,10 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
         dimensions = obj.dimensions;
         cluster = obj.cluster;
         data = obj.data;
-        parent = obj.parent;
-
-        if(parent){
-            parent->replaceNode(&obj, this);
-        }
 
         obj.dimensions = 0;
         obj.cluster = 0;
         obj.data = nullptr;
-        obj.parent = nullptr;
     } else {
 #ifdef _DEBUG
 #pragma GCC diagnostic push
@@ -74,20 +64,15 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
     return *this;
 }
 
-DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]), parent(nullptr) {
+DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]) {
     std::copy(obj.data, obj.data + dimensions, data);
 }
 
-DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data), parent(obj.parent) {
+DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data) {
     if(this != &obj) {
         obj.dimensions = 0;
         obj.cluster = 0;
         obj.data = nullptr;
-        obj.parent = nullptr;
-
-        if(parent){
-            parent->replaceNode(&obj, this);
-        }
     } else {
 #ifdef _DEBUG
 #pragma GCC diagnostic push
@@ -113,14 +98,6 @@ float DataPointFloat::operator[](unsigned int index) {
 
 unsigned int DataPointFloat::getDimensions() {
     return this->dimensions;
-}
-
-void DataPointFloat::setParent(RtreeNode *newParent) {
-    this->parent = newParent;
-}
-
-RtreeNode * DataPointFloat::getParent() {
-    return this->parent;
 }
 
 float *DataPointFloat::getData() {

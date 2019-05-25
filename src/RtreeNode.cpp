@@ -44,7 +44,6 @@ RtreeNode::RtreeNode(DataPointFloat *firstChild): dimensions(firstChild->getDime
     }
     this->childLeaves[0] = firstChild;
     this->childCount = 1;
-    firstChild->setParent(this);
 }
 
 RtreeNode::~RtreeNode() {
@@ -52,7 +51,6 @@ RtreeNode::~RtreeNode() {
     delete [] maxBoundaries;
     for(int i=0; i < R_TREE_NUMBER_CHILDS; i++){
         delete childNodes[i];
-        if(childLeaves[i]) childLeaves[i]->setParent(nullptr);
         // Don't clear child leaves as they are held by something else
         //delete childLeaves[i];
     }
@@ -636,7 +634,6 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
         throw std::runtime_error("This function should only be called on Leave nodes");
     }
 #endif
-    child->setParent(this); // Needed anyway and doing it later requires a lot of logic and pain
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childLeaves[this->childCount++] = child;
         this->expandForNewChild(child);
@@ -892,11 +889,6 @@ void RtreeNode::checkIntegrity() {
         bool foundChild;
         if(this->hasLeaves()) {
             foundChild = this->childLeaves[i] != nullptr;
-            if (foundChild) {
-                if (this->childLeaves[i]->getParent() != this) {
-                    throw std::runtime_error("This child seems to have the wrong parent.");
-                }
-            }
         } else {
             foundChild = this->childNodes[i] != nullptr;
         }
