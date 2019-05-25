@@ -8,15 +8,16 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
         throw std::runtime_error("Couldn't read from file");
     }
     std::vector<DataPointFloat> datapoints;
-    std::getline(file, line);
-    datapoints.emplace_back(line, dimensions, delim);
-    Rtree tree(dimensions, datapoints.data());
 
     while (std::getline(file, line)){
         if(!line.empty()){
             datapoints.emplace_back(line, dimensions, delim);
-            tree.addDataPoint(datapoints.data() + datapoints.size() - 1);
         }
+    }
+
+    Rtree tree(dimensions, datapoints.data());
+    for(int i=1; i < datapoints.size(); i++){
+        tree.addDataPoint(datapoints.data() + i);
     }
 
     int maxCluster = 0;
