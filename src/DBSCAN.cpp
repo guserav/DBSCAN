@@ -23,8 +23,8 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
     int maxCluster = 0;
     for(DataPointFloat& seed : datapoints){
         if(seed.isUnClassified()) {
-            std::list<DataPointFloat*> toDiscover = seed.getNeighbours(epsilon);
-            if(toDiscover.size() < minPts) {
+            std::list<DataPointFloat*> toDiscover = tree.getNeighbours(&seed, epsilon);
+            if(toDiscover.size() < minPts + 1) { //getNeighbours includes the point itself
                 seed.setCluster(NOISE);
                 continue;
             }
@@ -40,8 +40,8 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
                 }
                 if(currentNode->isUnClassified()){
                     currentNode->setCluster(currentCluster);
-                    std::list<DataPointFloat*> neighbours = currentNode->getNeighbours(epsilon);
-                    if(neighbours.size() < minPts) continue;
+                    std::list<DataPointFloat*> neighbours = tree.getNeighbours(currentNode, epsilon);
+                    if(neighbours.size() < minPts + 1) continue;
                     for(DataPointFloat* point : neighbours) {
                         toDiscover.push_back(point);
                     }

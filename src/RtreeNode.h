@@ -32,8 +32,7 @@ public:
     void removePoint(DataPointFloat *pFloat);
     void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
 
-    void getNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
-    void addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * caller, DataPointFloat *pFloat, float epsilon);
+    void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
 
     void printToConsole(int level);
     void printForVisualisation(int level);
@@ -61,7 +60,6 @@ private:
 
     char childCount = 0;
     float volume = 0;
-    RtreeNode * parent = nullptr;
     unsigned int dimensions;
     float * minBoundaries;
     float * maxBoundaries;

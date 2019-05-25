@@ -163,22 +163,6 @@ bool DataPointFloat::isUnClassified() {
 }
 
 /**
- * Generates a list of all eps-neighbours of that point
- * @param epsilon the size of the area to look at
- * @return A list of eps-neighbours
- */
-std::list<DataPointFloat *> DataPointFloat::getNeighbours(float epsilon){
-    std::list<DataPointFloat *> list;
-#ifdef _DEBUG
-    if(!this->parent) {
-        throw std::runtime_error("Expected a parent at this point");
-    }
-#endif
-    this->parent->getNeighbours(list, this, epsilon);
-    return list;
-}
-
-/**
  * Returns the distance squared to that point
  * @param pFloat the point to get the distance to
  * @return squared distance as float

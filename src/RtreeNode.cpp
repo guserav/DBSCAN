@@ -29,7 +29,6 @@ RtreeNode::RtreeNode(RtreeNode *firstChild): dimensions(firstChild->dimensions) 
     }
     this->childNodes[0] = firstChild;
     this->childCount = 1;
-    firstChild->parent = this;
 }
 
 RtreeNode::RtreeNode(RtreeNode *firstChild, RtreeNode *secondChild): RtreeNode(firstChild) {
@@ -52,7 +51,6 @@ RtreeNode::~RtreeNode() {
     delete [] minBoundaries;
     delete [] maxBoundaries;
     for(int i=0; i < R_TREE_NUMBER_CHILDS; i++){
-        if(childNodes[i]) childNodes[i]->parent = nullptr;
         delete childNodes[i];
         if(childLeaves[i]) childLeaves[i]->setParent(nullptr);
         // Don't clear child leaves as they are held by something else
@@ -200,7 +198,6 @@ bool RtreeNode::hasLeaves() {
  * @return  A new node if a split occured
  */
 RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
-    newChild->parent = this; // Set this regardless of whether the child will be a part of this node as it is to annoying to make a case later
     if(childCount < R_TREE_NUMBER_CHILDS) {
         this->childNodes[this->childCount++] = newChild;
         for(int i=0; i < this->dimensions; i++){
@@ -902,11 +899,6 @@ void RtreeNode::checkIntegrity() {
             }
         } else {
             foundChild = this->childNodes[i] != nullptr;
-            if (foundChild) {
-                if (this->childNodes[i]->parent != this) {
-                    throw std::runtime_error("This child seems to have the wrong parent.");
-                }
-            }
         }
         if(foundChild && i >= this->childCount) {
             throw std::runtime_error("Not Expecting child here");
@@ -944,8 +936,7 @@ void RtreeNode::printToConsole(int level) {
     for(int i = 0; i < level; i++) {
         std::cout << "    ";
     }
-    std::cout << "[" << std::to_string(reinterpret_cast<long long>(this)) << "] parent: ["
-            << std::to_string(reinterpret_cast<long long>(this->parent)) << "] childs: [";
+    std::cout << "[" << std::to_string(reinterpret_cast<long long>(this)) << "] childs: [";
     for(int i = 0; i < R_TREE_NUMBER_CHILDS; i++) {
         if(i < this->childCount) {
             std::cout << "\033[1;30m";
@@ -988,35 +979,12 @@ void RtreeNode::printForVisualisation(int level) {
 }
 
 /**
- * Return a list of neighbours to the specified point. This function should only be called on leaves.
- * @param list the list to add found neighbours to
- * @param pFloat The point to find neighbors to
- * @param epsilon The epsilon to compare the distance to
- */
-void RtreeNode::getNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon) {
-#ifdef _DEBUG
-    if(!this->hasLeaves()) {
-        throw std::runtime_error("This function should only be called on Leave nodes. How has a dataPoint a NonLeave as parent");
-    }
-#endif
-    for(int i = 0; i < this->childCount; i++) {
-        if(this->childLeaves[i] != pFloat){
-            if(pFloat->getDistance(childLeaves[i]) < epsilon) {
-                list.push_back(childLeaves[i]);
-            }
-        }
-    }
-    if(parent) parent->addNeighbours(list, this, pFloat, epsilon);
-}
-
-/**
  * Adds all eps-neighbours to the given point into the given list
  * @param list the list to add into
- * @param caller the calling node to prevent loops
  * @param pFloat the point to check around
  * @param epsilon the size of the neighbourhood
  */
-void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * caller, DataPointFloat *pFloat, float epsilon){
+void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon){
     if(this->hasLeaves()) {
         for(int i = 0; i < this->childCount; i++) {
             if(pFloat->getDistance(childLeaves[i]) < epsilon) {
@@ -1025,14 +993,11 @@ void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, RtreeNode * cal
         }
     } else {
         for(int i = 0; i < this->childCount; i++) {
-            if(this->childNodes[i] != caller) {
-                if(this->childNodes[i]->distanceToBoundaries(pFloat) < epsilon) {
-                    this->childNodes[i]->addNeighbours(list, this, pFloat, epsilon);
-                }
+            if(this->childNodes[i]->distanceToBoundaries(pFloat) < epsilon) {
+                this->childNodes[i]->addNeighbours(list, pFloat, epsilon);
             }
         }
     }
-    if(parent && parent != caller) parent->addNeighbours(list, this, pFloat, epsilon);
 }
 
 /**

@@ -26,7 +26,6 @@ public:
     float* getData();
     bool isUnClassified();
     bool isNoise();
-    std::list<DataPointFloat*> getNeighbours(float epsilon);
     float getDistance(DataPointFloat *pFloat);
     void setCluster(int cluster);
     int getCluster();
