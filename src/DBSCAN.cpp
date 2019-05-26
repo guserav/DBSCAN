@@ -30,6 +30,9 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
             }
             int currentCluster = ++maxCluster;
             seed.setCluster(currentCluster);
+            for(DataPointFloat*& point : toDiscover){
+                point->seen();
+            }
             DataPointFloat* currentNode;
             while(!toDiscover.empty()) {
                 currentNode = toDiscover.front(); // Do breath first as this should avoid more collisions in parallel case
@@ -43,7 +46,9 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
                     std::list<DataPointFloat*> neighbours = tree.getNeighbours(currentNode, epsilon);
                     if(neighbours.size() < minPts + 1) continue;
                     for(DataPointFloat* point : neighbours) {
-                        toDiscover.push_back(point);
+                        if(!point->seen()){
+                            toDiscover.push_back(point);
+                        }
                     }
                 }
 #ifdef _DEBUG

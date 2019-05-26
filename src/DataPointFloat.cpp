@@ -38,6 +38,7 @@ DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
         cluster = obj.cluster;
         data = new float[dimensions];
         std::copy(obj.data, obj.data + dimensions, data);
+        isSeen = obj.isSeen;
     }
     return *this;
 }
@@ -49,6 +50,7 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
         dimensions = obj.dimensions;
         cluster = obj.cluster;
         data = obj.data;
+        isSeen = obj.isSeen;
 
         obj.dimensions = 0;
         obj.cluster = 0;
@@ -64,11 +66,11 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
     return *this;
 }
 
-DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]) {
+DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]), isSeen(obj.isSeen) {
     std::copy(obj.data, obj.data + dimensions, data);
 }
 
-DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data) {
+DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data), isSeen(obj.isSeen) {
     if(this != &obj) {
         obj.dimensions = 0;
         obj.cluster = 0;
@@ -162,4 +164,18 @@ int DataPointFloat::getCluster() {
 
 bool DataPointFloat::isNoise() {
     return this->cluster == NOISE;
+}
+
+/**
+ * Indicates whether the object hast been seen before and marks it as seen.
+ *
+ * This means after calling this function it will be asumend that this object is in toDiscover or has an asigned cluster to it.
+ * @return whether it has been seen before.
+ */
+bool DataPointFloat::seen() {
+    if(this->isSeen){
+        return true;
+    }
+    this->isSeen = true;
+    return false;
 }

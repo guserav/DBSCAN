@@ -31,10 +31,12 @@ public:
     void printToConsole(int level);
     void printForVisualisation(int level);
     void printToConsoleWithCluster();
+    bool seen();
 
 private:
     float* data;
     int cluster = UNCLASSIFIED;
+    bool isSeen = false;
     unsigned int dimensions;
     void destruct();
 };
