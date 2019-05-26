@@ -974,19 +974,20 @@ void RtreeNode::printForVisualisation(int level) {
  * Adds all eps-neighbours to the given point into the given list
  * @param list the list to add into
  * @param pFloat the point to check around
+ * @param epsilon2 epsilon ^ 2
  * @param epsilon the size of the neighbourhood
  */
-void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon){
+void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon2){
     if(this->hasLeaves()) {
         for(int i = 0; i < this->childCount; i++) {
-            if(pFloat->getDistance(childLeaves[i]) < epsilon) {
+            if(pFloat->getDistance(childLeaves[i]) < epsilon2) {
                 list.push_back(childLeaves[i]);
             }
         }
     } else {
         for(int i = 0; i < this->childCount; i++) {
-            if(this->childNodes[i]->distanceToBoundaries(pFloat) < epsilon) {
-                this->childNodes[i]->addNeighbours(list, pFloat, epsilon);
+            if(this->canReachBoundaries(pFloat, std::sqrt(epsilon2))) {
+                this->childNodes[i]->addNeighbours(list, pFloat, epsilon2);
             }
         }
     }
@@ -1012,4 +1013,24 @@ float RtreeNode::distanceToBoundaries(DataPointFloat *pFloat) {
         }
     }
     return distance;
+}
+
+/**
+ * Returns the distance of the point to boundary of this nodes boundaries.
+ *
+ * @param pFloat the point to check for
+ * @param epsilon the size of the area to check
+ * @return true if it is possible the child are contained in the area
+ */
+bool RtreeNode::canReachBoundaries(DataPointFloat *pFloat, float epsilon) {
+    for(int d = 0; d < this->dimensions; d++){
+        if((*pFloat)[d] > this->maxBoundaries[d] + epsilon) {
+            return false;
+        } else {
+            if((*pFloat)[d] < this->minBoundaries[d] - epsilon) {
+                return false;
+            }
+        }
+    }
+    return true;
 }

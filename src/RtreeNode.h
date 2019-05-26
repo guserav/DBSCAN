@@ -32,7 +32,7 @@ public:
     void removePoint(DataPointFloat *pFloat);
     void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
 
-    void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
+    void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon2);
 
     void printToConsole(int level);
     void printForVisualisation(int level);
@@ -69,6 +69,8 @@ private:
     void recalculateBoundaries();
 
     float distanceToBoundaries(DataPointFloat *pFloat);
+    bool canReachBoundaries(DataPointFloat *pFloat, float epsilon);
+
 };
 
 

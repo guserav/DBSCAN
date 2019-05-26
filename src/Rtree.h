@@ -15,7 +15,7 @@ public:
     ~Rtree();
 
     void addDataPoint(DataPointFloat * point);
-    std::list<DataPointFloat *> getNeighbours(DataPointFloat* point, float epsilon);
+    std::list<DataPointFloat *> getNeighbours(DataPointFloat* point, float epsilon2);
 
     void printToConsole();
     void printForVisualisation();

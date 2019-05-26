@@ -1,7 +1,7 @@
 #include "DBSCAN.h"
 
 void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char delim, float epsilon, int minPts, bool writeToConsole){
-    epsilon = epsilon * epsilon; // As euclidian distance is used this saves a lot of sqrt calls TODO discuss in paper
+    float epsilon2 = epsilon * epsilon; // As euclidian distance is used this saves a lot of sqrt calls TODO discuss in paper
     std::string line;
     std::ifstream file(filename);
     if(file.peek() == std::ifstream::traits_type::eof()){
@@ -23,7 +23,7 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
     int maxCluster = 0;
     for(DataPointFloat& seed : datapoints){
         if(seed.isUnClassified()) {
-            std::list<DataPointFloat*> toDiscover = tree.getNeighbours(&seed, epsilon);
+            std::list<DataPointFloat*> toDiscover = tree.getNeighbours(&seed, epsilon2);
             if(toDiscover.size() < minPts + 1) { //getNeighbours includes the point itself
                 seed.setCluster(NOISE);
                 continue;
@@ -40,7 +40,7 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
                 }
                 if(currentNode->isUnClassified()){
                     currentNode->setCluster(currentCluster);
-                    std::list<DataPointFloat*> neighbours = tree.getNeighbours(currentNode, epsilon);
+                    std::list<DataPointFloat*> neighbours = tree.getNeighbours(currentNode, epsilon2);
                     if(neighbours.size() < minPts + 1) continue;
                     for(DataPointFloat* point : neighbours) {
                         toDiscover.push_back(point);
