@@ -29,9 +29,6 @@ public:
     RtreeNode * insertNewPoint(DataPointFloat* dataPoint);
     bool hasLeaves();
 
-    void removePoint(DataPointFloat *pFloat);
-    void replaceNode(DataPointFloat *oldPoint, DataPointFloat *newPoint);
-
     void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
 
     void printToConsole(int level);
@@ -39,7 +36,6 @@ public:
 
 
 private:
-    explicit RtreeNode(unsigned int dimensions);
     void init();
     static float calculateOverlap(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
     static float calculateOverlap(const float * s1, const float * e1, const float * s2, const float * e2, unsigned int dimension);
@@ -48,7 +44,6 @@ private:
     static void sortByMinBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     static void sortByMaxBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     float calculateEnlargement(DataPointFloat *pFloat);
-    void dropPoint(DataPointFloat *pFloat);
     void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     RtreeNode * addChild(RtreeNode* newChild);
     RtreeNode* addLeaveChild(DataPointFloat* child);
