@@ -89,7 +89,7 @@ DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.di
  * Non safe access of index. value of the data point.
  * If BEBUG ist set this is safe.
  */
-float DataPointFloat::operator[](unsigned int index) {
+float DataPointFloat::operator[](unsigned int index) const{
 #ifdef _DEBUG
     if( index < 0 || index >= this->dimensions) {
         throw std::invalid_argument("index: " + std::to_string(index) + " is out of range of dimensions " + std::to_string(this->dimensions));
@@ -98,7 +98,7 @@ float DataPointFloat::operator[](unsigned int index) {
     return this->data[index];
 }
 
-unsigned int DataPointFloat::getDimensions() {
+unsigned int DataPointFloat::getDimensions() const{
     return this->dimensions;
 }
 
@@ -137,7 +137,7 @@ void DataPointFloat::printToConsoleWithCluster(){
     std::cout << std::to_string(this->cluster) << std::endl;
 }
 
-bool DataPointFloat::isUnClassified() {
+bool DataPointFloat::isUnClassified() const{
     return this->cluster == UNCLASSIFIED;
 }
 
@@ -146,7 +146,7 @@ bool DataPointFloat::isUnClassified() {
  * @param pFloat the point to get the distance to
  * @return squared distance as float
  */
-float DataPointFloat::getDistance(DataPointFloat *pFloat) {
+float DataPointFloat::getDistance(DataPointFloat *pFloat) const{
     float distance = 0.0f;
     for(int i = 0; i < this->dimensions; i++){
         distance += std::pow((*pFloat)[i] - (*this)[i], 2);
@@ -158,11 +158,11 @@ void DataPointFloat::setCluster(int cluster) {
     this->cluster = cluster;
 }
 
-int DataPointFloat::getCluster() {
+int DataPointFloat::getCluster() const{
     return this->cluster;
 }
 
-bool DataPointFloat::isNoise() {
+bool DataPointFloat::isNoise() const{
     return this->cluster == NOISE;
 }
 

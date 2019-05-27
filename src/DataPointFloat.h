@@ -17,16 +17,16 @@ public:
     DataPointFloat(DataPointFloat&& obj) noexcept; // move constructor
     DataPointFloat& operator=(const DataPointFloat& obj); //copy assignment
     DataPointFloat& operator=(DataPointFloat&& obj) noexcept; // move assignment constructor
-    float operator[](unsigned int index);
+    float operator[](unsigned int index) const;
     ~DataPointFloat();
 
-    unsigned int getDimensions();
+    unsigned int getDimensions() const;
     float* getData();
-    bool isUnClassified();
-    bool isNoise();
-    float getDistance(DataPointFloat *pFloat);
+    bool isUnClassified() const;
+    bool isNoise() const;
+    float getDistance(DataPointFloat *pFloat) const;
     void setCluster(int cluster);
-    int getCluster();
+    int getCluster() const;
 
     void printToConsole(int level);
     void printForVisualisation(int level);

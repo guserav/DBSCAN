@@ -170,7 +170,7 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
     return nullptr;
 }
 
-bool RtreeNode::hasLeaves() {
+bool RtreeNode::hasLeaves() const{
     if(this->childNodes[0] != nullptr) return false;
     if(this->childLeaves[0] != nullptr) return true;
     throw std::runtime_error("R_Tree_Node not fully initialised at least one child should be included before using this function");
@@ -591,7 +591,7 @@ float RtreeNode::calculateVolume(RtreeNode *allChilds[R_TREE_NUMBER_CHILDS + 1],
  * @param pFloat pointer to the datapoint to add
  * @return the area enlargement needed
  */
-float RtreeNode::calculateEnlargement(DataPointFloat *dataPoint) {
+float RtreeNode::calculateEnlargement(DataPointFloat *dataPoint) const{
     float newVolume = 1.0f;
     for(int i=0; i < dimensions; i++){
         if((*dataPoint)[i] < minBoundaries[i]) {
@@ -898,10 +898,10 @@ void RtreeNode::printForVisualisation(int level) {
  * @param pFloat the point to check around
  * @param epsilon the size of the neighbourhood
  */
-void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon){
+void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat const &pFloat, float epsilon) const{
     if(this->hasLeaves()) {
         for(int i = 0; i < this->childCount; i++) {
-            if(pFloat->getDistance(childLeaves[i]) < epsilon) {
+            if(pFloat.getDistance(childLeaves[i]) < epsilon) {
                 list.push_back(childLeaves[i]);
             }
         }
@@ -921,16 +921,16 @@ void RtreeNode::addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat 
  * @param epsilon the size oof the area to check
  * @return true if it is possible the child are contained in the area
  */
-float RtreeNode::distanceToBoundaries(DataPointFloat *pFloat) {
+float RtreeNode::distanceToBoundaries(DataPointFloat const &pFloat) const {
     float distance = 0.0f;
     for(int d = 0; d < this->dimensions; d++){
-        if((*pFloat)[d] < this->maxBoundaries[d]) {
-            if((*pFloat)[d] < this->minBoundaries[d]) {
-                distance += std::pow((*pFloat)[d] - this->minBoundaries[d], 2);
+        if((pFloat)[d] < this->maxBoundaries[d]) {
+            if((pFloat)[d] < this->minBoundaries[d]) {
+                distance += std::pow((pFloat)[d] - this->minBoundaries[d], 2);
             }
             // point is in the boundaries respective to d
         } else {
-            distance += std::pow((*pFloat)[d] - this->maxBoundaries[d], 2);
+            distance += std::pow((pFloat)[d] - this->maxBoundaries[d], 2);
         }
     }
     return distance;

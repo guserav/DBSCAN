@@ -27,9 +27,9 @@ public:
     ~RtreeNode();
 
     RtreeNode * insertNewPoint(DataPointFloat* dataPoint);
-    bool hasLeaves();
+    bool hasLeaves() const;
 
-    void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
+    void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat const &pFloat, float epsilon) const;
 
     void printToConsole(int level);
     void printForVisualisation(int level);
@@ -43,8 +43,8 @@ private:
     static void calculateMargin(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension, float& margin);
     static void sortByMinBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     static void sortByMaxBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
-    float calculateEnlargement(DataPointFloat *pFloat);
-    void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
+    float calculateEnlargement(DataPointFloat *pFloat) const;
+    static void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
     RtreeNode * addChild(RtreeNode* newChild);
     RtreeNode* addLeaveChild(DataPointFloat* child);
     void expandForNewChild(DataPointFloat* child);
@@ -63,7 +63,7 @@ private:
 
     void recalculateBoundaries();
 
-    float distanceToBoundaries(DataPointFloat *pFloat);
+    float distanceToBoundaries(DataPointFloat const &pFloat) const;
 };
 
 

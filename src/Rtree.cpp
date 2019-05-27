@@ -35,7 +35,7 @@ void Rtree::addDataPoint(DataPointFloat *point) {
  * @param epsilon the size of the area to look at
  * @return A list of eps-neighbours
  */
-std::list<DataPointFloat *> Rtree::getNeighbours(DataPointFloat* point, float epsilon){
+std::list<DataPointFloat *> Rtree::getNeighbours(DataPointFloat const &point, float epsilon) const{
     std::list<DataPointFloat *> list;
     this->root->addNeighbours(list, point, epsilon);
     return list;
