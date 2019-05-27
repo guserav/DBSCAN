@@ -14,6 +14,7 @@ data=(blobs circles noise)
 eps=("0.1" "0.1" "0.2")
 minPts=(5 5 2)
 
+touch ~/CPU_REQUEST
 touch ~/REQUEST_CPU
 sleep 10
 
@@ -34,4 +35,4 @@ do
     fi
 done
 
-rm ~/REQUEST_CPU
+rm -f ~/CPU_REQUEST ~/REQUEST_CPU
