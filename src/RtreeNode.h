@@ -27,7 +27,7 @@ public:
     ~RtreeNode();
 
     RtreeNode * insertNewPoint(DataPointFloat* dataPoint);
-    bool hasLeaves();
+    inline bool hasLeaves() __attribute__((always_inline));
 
     void addNeighbours(std::list<DataPointFloat *>& list, DataPointFloat *pFloat, float epsilon);
 
@@ -36,19 +36,19 @@ public:
 
 
 private:
-    void init();
-    static float calculateOverlap(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
-    static float calculateOverlap(const float * s1, const float * e1, const float * s2, const float * e2, unsigned int dimension);
-    static float calculateVolume(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension);
-    static void calculateMargin(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension, float& margin);
-    static void sortByMinBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
-    static void sortByMaxBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d);
-    float calculateEnlargement(DataPointFloat *pFloat);
-    void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d);
+    inline void init() __attribute__((always_inline));
+    inline static float calculateOverlap(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension) __attribute__((always_inline));
+    inline static float calculateOverlap(const float * s1, const float * e1, const float * s2, const float * e2, unsigned int dimension) __attribute__((always_inline));
+    inline static float calculateVolume(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension) __attribute__((always_inline));
+    inline static void calculateMargin(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int k, unsigned int dimension, float& margin) __attribute__((always_inline));
+    inline static void sortByMinBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d) __attribute__((always_inline));
+    inline static void sortByMaxBoundary(RtreeNode * allChilds[R_TREE_NUMBER_CHILDS + 1], int d) __attribute__((always_inline));
+    inline float calculateEnlargement(DataPointFloat *pFloat) __attribute__((always_inline));
+    inline void sortAllChildsLeaves(DataPointFloat *allCurrentChilds[R_TREE_NUMBER_CHILDS + 1], int d) __attribute__((always_inline));
     RtreeNode * addChild(RtreeNode* newChild);
     RtreeNode* addLeaveChild(DataPointFloat* child);
-    void expandForNewChild(DataPointFloat* child);
-    void calculateVolume();
+    inline void expandForNewChild(DataPointFloat* child) __attribute__((always_inline));
+    inline void calculateVolume() __attribute__((always_inline));
 #ifdef _DEBUG
     void checkIntegrity();
 #endif
@@ -61,9 +61,9 @@ private:
     RtreeNode* childNodes[R_TREE_NUMBER_CHILDS];
     DataPointFloat* childLeaves[R_TREE_NUMBER_CHILDS];
 
-    void recalculateBoundaries();
+    inline void recalculateBoundaries() __attribute__((always_inline));
 
-    float distanceToBoundaries(DataPointFloat *pFloat);
+    inline float distanceToBoundaries(DataPointFloat *pFloat) __attribute__((always_inline));
 };
 
 

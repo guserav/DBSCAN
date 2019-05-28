@@ -20,18 +20,18 @@ public:
     float operator[](unsigned int index);
     ~DataPointFloat();
 
-    unsigned int getDimensions();
-    float* getData();
-    bool isUnClassified();
-    bool isNoise();
-    float getDistance(DataPointFloat *pFloat);
-    void setCluster(int cluster);
-    int getCluster();
+    inline unsigned int getDimensions() __attribute__((always_inline));
+    inline float* getData() __attribute__((always_inline));
+    inline bool isUnClassified() __attribute__((always_inline));
+    inline bool isNoise() __attribute__((always_inline));
+    inline float getDistance(DataPointFloat *pFloat) __attribute__((always_inline));
+    inline void setCluster(int cluster) __attribute__((always_inline));
+    inline int getCluster() __attribute__((always_inline));
+    inline bool seen() __attribute__((always_inline));
 
     void printToConsole(int level);
     void printForVisualisation(int level);
     void printToConsoleWithCluster();
-    bool seen();
 
 private:
     float* data;
