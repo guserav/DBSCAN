@@ -23,6 +23,7 @@ echo "program=${program} start=${sta} step=${step} end=${end} runs=${runs} task_
 for i in ${!data[*]}
 do
     if [ "$mode" = "single" ]; then
+        date >&2
         echo "Doing single ${data[$i]}" >&2
         $program "${task_name}\$${data[$i]}\$0" ";" $runs "data/${data[$i]}.data" 2 ";" "${eps[$i]}" "${minPts[$i]}" 2>&1 > /dev/null
     else
@@ -35,4 +36,5 @@ do
     fi
 done
 
+date >&2
 rm -f ~/CPU_REQUEST ~/REQUEST_CPU
