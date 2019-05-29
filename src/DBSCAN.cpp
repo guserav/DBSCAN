@@ -20,6 +20,10 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
         tree.addDataPoint(datapoints.data() + i);
     }
 
+#ifdef _DEBUG
+    tree.checkIntegrity();
+#endif
+
     int maxCluster = 0;
     for(DataPointFloat& seed : datapoints){
         if(seed.isUnClassified()) {

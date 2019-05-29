@@ -28,6 +28,9 @@ void Rtree::addDataPoint(DataPointFloat *point) {
     if((newNode = this->root->insertNewPoint(point)) != nullptr){
         this->root = new RtreeNode(this->root, newNode);
     }
+#ifdef _DEBUG
+    this->checkIntegrity();
+#endif
 }
 
 /**
@@ -40,6 +43,12 @@ std::list<DataPointFloat *> Rtree::getNeighbours(DataPointFloat* point, float ep
     this->root->addNeighbours(list, point, epsilon);
     return list;
 }
+
+#ifdef _DEBUG
+void Rtree::checkIntegrity(){
+    this->root->checkIntegrity(true);
+}
+#endif
 
 void Rtree::printToConsole() {
     this->root->printToConsole(0);

@@ -162,11 +162,11 @@ RtreeNode *RtreeNode::insertNewPoint(DataPointFloat *dataPoint) {
     }
     // Insert node
     // On split of child add Child to this node
+    this->expandForNewChild(dataPoint); // This could probably be moved to the end of the method. But it is easier to debug here.
     // Split if necessary
     if((newNode = childNodes[chosenIndex]->insertNewPoint(dataPoint)) != nullptr) {
         return this->addChild(newNode);
     }
-    this->expandForNewChild(dataPoint); // Do this here as addChild will expand the Boundaries by itself
     return nullptr;
 }
 
@@ -755,9 +755,6 @@ void RtreeNode::recalculateBoundaries() {
                 maxBoundaries[d] = value;
             }
         }
-#ifdef _DEBUG
-        checkIntegrity();
-#endif
     }
     calculateVolume();
 }
@@ -798,7 +795,7 @@ void RtreeNode::calculateVolume() {
 /**
  * Debug function to check the integrity of this object
  */
-void RtreeNode::checkIntegrity() {
+void RtreeNode::checkIntegrity(bool checkChilds) {
     for(int i = 0; i < this->dimensions; i++) {
         if(this->minBoundaries[i] > this->maxBoundaries[i]) {
             throw std::runtime_error("Boundaries of this object don't match (negative expansion)");
@@ -810,9 +807,31 @@ void RtreeNode::checkIntegrity() {
     for(int i = 0; i < R_TREE_NUMBER_CHILDS; i++) {
         bool foundChild;
         if(this->hasLeaves()) {
-            foundChild = this->childLeaves[i] != nullptr;
+            if((foundChild = (this->childLeaves[i] != nullptr))) {
+                for(int d = 0; d < this->dimensions; d++) {
+                    float value = (*this->childLeaves[i])[d];
+                    if (value < this->minBoundaries[d]) {
+                        throw std::runtime_error("Child point below bound.");
+                    }
+                    if (value > this->maxBoundaries[d]) {
+                        throw std::runtime_error("Child point above bound.");
+                    }
+                }
+            }
         } else {
-            foundChild = this->childNodes[i] != nullptr;
+            if((foundChild = (this->childNodes[i] != nullptr))) {
+                for (int d = 0; d < this->dimensions; d++) {
+                    if (this->childNodes[i]->minBoundaries[d] < this->minBoundaries[d]) {
+                        throw std::runtime_error("Child node below bound.");
+                    }
+                    if (this->childNodes[i]->maxBoundaries[d] > this->maxBoundaries[d]) {
+                        throw std::runtime_error("Child node above bound.");
+                    }
+                }
+                if(checkChilds) {
+                    this->childNodes[i]->checkIntegrity(true);
+                }
+            }
         }
         if(foundChild && i >= this->childCount) {
             throw std::runtime_error("Not Expecting child here");

@@ -33,6 +33,9 @@ public:
 
     void printToConsole(int level);
     void printForVisualisation(int level);
+#ifdef _DEBUG
+    void checkIntegrity(bool checkChilds=false);
+#endif
 
 
 private:
@@ -49,9 +52,6 @@ private:
     RtreeNode* addLeaveChild(DataPointFloat* child);
     void expandForNewChild(DataPointFloat* child);
     void calculateVolume();
-#ifdef _DEBUG
-    void checkIntegrity();
-#endif
 
     char childCount = 0;
     float volume = 0;

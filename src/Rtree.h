@@ -16,6 +16,9 @@ public:
 
     void addDataPoint(DataPointFloat * point);
     std::list<DataPointFloat *> getNeighbours(DataPointFloat* point, float epsilon);
+#ifdef _DEBUG
+    void checkIntegrity();
+#endif
 
     void printToConsole();
     void printForVisualisation();
