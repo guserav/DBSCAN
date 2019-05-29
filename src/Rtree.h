@@ -14,8 +14,8 @@ public:
     Rtree& operator=(Rtree&& obj) noexcept; // move assignment constructor
     ~Rtree();
 
-    inline void addDataPoint(DataPointFloat * point) __attribute__((always_inline));
-    inline std::list<DataPointFloat *> getNeighbours(DataPointFloat* point, float epsilon) __attribute__((always_inline));
+    void addDataPoint(DataPointFloat * point);
+    std::list<DataPointFloat *> getNeighbours(DataPointFloat* point, float epsilon);
 
     void printToConsole();
     void printForVisualisation();
