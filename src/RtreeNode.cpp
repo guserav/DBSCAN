@@ -190,7 +190,8 @@ RtreeNode* RtreeNode::addChild(RtreeNode * newChild) {
         for(int i=0; i < this->dimensions; i++){
             if(this->maxBoundaries[i] < newChild->maxBoundaries[i]) {
                 this->maxBoundaries[i] = newChild->maxBoundaries[i];
-            } else if(this->minBoundaries[i] > newChild->minBoundaries[i]) {
+            }
+            if(this->minBoundaries[i] > newChild->minBoundaries[i]) {
                 this->minBoundaries[i] = newChild->minBoundaries[i];
             }
         }
