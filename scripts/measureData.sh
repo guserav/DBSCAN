@@ -10,9 +10,9 @@ runs=$6 # Per thread
 task_name=$7
 set OMP_DYNAMIC=0
 
-data=(blobs2M circles2M noise2M)
-eps=("0.1" "0.1" "0.2")
-minPts=(5 5 2)
+data=(blobs4M circles4M noise4M)
+eps=("0.05" "0.05" "0.05")
+minPts=(20 5 1)
 
 touch ~/CPU_REQUEST
 touch ~/REQUEST_CPU
