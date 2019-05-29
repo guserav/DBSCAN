@@ -19,15 +19,9 @@ int main(int argc, char *argv[]) {
         DBSCAN::dbscan(dataFile, dimensions, delim, epsilon, minPts, false);
     }
 
-    std::chrono::high_resolution_clock::time_point startTime, endTime;
     std::cerr << testCaseName;
     for (int i = 0; i < runs; i++) {
-        startTime = std::chrono::high_resolution_clock::now();
         DBSCAN::dbscan(dataFile, dimensions, delim, epsilon, minPts);
-        endTime = std::chrono::high_resolution_clock::now();
-
-        long long int timeMS = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
-        std::cerr << measurementDelim << timeMS;
     }
     std::cerr << std::endl;
     return 0;

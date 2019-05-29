@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <chrono>
 #include "DataPointFloat.h"
 #include "Rtree.h"
 #include "DBSCAN.h"

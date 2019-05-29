@@ -2,6 +2,8 @@
 
 void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char delim, float epsilon, int minPts, bool writeToConsole){
     epsilon = epsilon * epsilon; // As euclidian distance is used this saves a lot of sqrt calls TODO discuss in paper
+    std::chrono::high_resolution_clock::time_point startTime, endTime;
+
     std::string line;
     std::ifstream file(filename);
     if(file.peek() == std::ifstream::traits_type::eof()){
@@ -9,21 +11,30 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
     }
     std::vector<DataPointFloat> datapoints;
 
+    startTime = std::chrono::high_resolution_clock::now();
     while (std::getline(file, line)){
         if(!line.empty()){
             datapoints.emplace_back(line, dimensions, delim);
         }
     }
+    endTime = std::chrono::high_resolution_clock::now();
+    long long int timeMS = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+    if(writeToConsole) std::cerr << delim << timeMS;
 
+    startTime = std::chrono::high_resolution_clock::now();
     Rtree tree(dimensions, datapoints.data());
     for(int i=1; i < datapoints.size(); i++){
         tree.addDataPoint(datapoints.data() + i);
     }
+    endTime = std::chrono::high_resolution_clock::now();
+    timeMS = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+    if(writeToConsole) std::cerr << delim << timeMS;
 
 #ifdef _DEBUG
     tree.checkIntegrity();
 #endif
 
+    startTime = std::chrono::high_resolution_clock::now();
     int maxCluster = 0;
     for(DataPointFloat& seed : datapoints){
         if(seed.isUnClassified()) {
@@ -63,9 +74,17 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
             }
         }
     }
+    endTime = std::chrono::high_resolution_clock::now();
+    timeMS = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+    if(writeToConsole) std::cerr << delim << timeMS;
+
+    startTime = std::chrono::high_resolution_clock::now();
     if(writeToConsole) {
         for(DataPointFloat& point : datapoints){
             point.printToConsoleWithCluster();
         }
     }
+    endTime = std::chrono::high_resolution_clock::now();
+    timeMS = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+    if(writeToConsole) std::cerr << delim << timeMS;
 }
