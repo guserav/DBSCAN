@@ -10,7 +10,7 @@ runs=$6 # Per thread
 task_name=$7
 set OMP_DYNAMIC=0
 
-data=(blobs circles noise)
+data=(blobs2M circles2M noise2M)
 eps=("0.1" "0.1" "0.2")
 minPts=(5 5 2)
 
