@@ -743,6 +743,9 @@ RtreeNode* RtreeNode::addLeaveChild(DataPointFloat *child) {
  * Hereby the values currently in min and maxBoundaries are ignored as there are assumed to be not valid
  */
 void RtreeNode::recalculateBoundaries() {
+#ifdef _DEBUG
+    if(!this->hasLeaves()) throw std::runtime_error("This only recalculated boundaries for leaves");
+#endif
     float * toCopy = childLeaves[0]->getData();
     std::copy(toCopy, toCopy + dimensions, minBoundaries);
     std::copy(minBoundaries, minBoundaries + dimensions, maxBoundaries);
