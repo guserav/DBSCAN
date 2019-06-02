@@ -25,7 +25,6 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
 #endif
 
     std::mutex toDiscoverMutex;
-    std::condition_variable toDiscoverMoreEntries;
     int maxCluster = 0;
     for(DataPointFloat& seed : datapoints){
         if(seed.isUnClassified()) {
@@ -39,36 +38,15 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
             for(DataPointFloat*& point : toDiscover){
                 point->seen();
             }
-            std::atomic<int> threadsRunning = 0;
-            bool toDiscoverFinalEmpty = false;
-#pragma omp parallel shared(toDiscover, threadsRunning, toDiscoverMutex, toDiscoverFinalEmpty, toDiscoverMoreEntries) firstprivate(currentCluster)
+#pragma omp parallel shared(toDiscover, toDiscoverMutex) firstprivate(currentCluster)
             {
-                threadsRunning.fetch_add(1, std::memory_order_release);
 
                 DataPointFloat* currentNode;
                 while (true) {
                     {
-                        std::unique_lock<std::mutex> lock(toDiscoverMutex);
+                        std::lock_guard<std::mutex> lock(toDiscoverMutex);
                         if (toDiscover.empty()) {
-#ifdef _DEBUG
-                            if(threadsRunning <= 0) {
-                                throw std::runtime_error("Wrong atomic order somewhere");
-                            }
-#endif
-                            // Wait for new items arriving in list this. If this thread is the last to go to sleep it has to wake all others to terminate
-                            if(threadsRunning.load(std::memory_order_acquire) == 1) {
-                                //This is the last running thread and toDiscover is empty
-                                toDiscoverFinalEmpty = true;
-                                toDiscoverMoreEntries.notify_all();
-                                break;
-                            } else {
-                                threadsRunning.fetch_sub(1, std::memory_order_release);
-                                while(toDiscover.empty() && !toDiscoverFinalEmpty) {
-                                    toDiscoverMoreEntries.wait(lock);
-                                }
-                                if(toDiscoverFinalEmpty) break;
-                                threadsRunning.fetch_add(1, std::memory_order_release);
-                            }
+                            break;
                         }
                         currentNode = toDiscover.front(); // Do breath first as this should avoid more collisions in parallel case
                         toDiscover.pop_front();
@@ -87,7 +65,6 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
                                 toDiscover.push_back(point);
                             }
                         }
-                        toDiscoverMoreEntries.notify_all();
                     }
 #ifdef _DEBUG
                     if (currentNode->getCluster() != currentCluster) {
