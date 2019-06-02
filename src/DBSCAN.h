@@ -8,6 +8,10 @@
 #include <vector>
 #include <fstream>
 #include <list>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <omp.h>
 #include "DataPointFloat.h"
 #include "Rtree.h"
 
