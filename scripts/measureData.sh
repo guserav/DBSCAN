@@ -27,7 +27,7 @@ do
         echo "Doing single ${data[$i]}" >&2
         $program "${task_name}\$${data[$i]}\$0" ";" $runs "data/${data[$i]}.data" 2 ";" "${eps[$i]}" "${minPts[$i]}" 2>&1 > /dev/null
     else
-        for thread_count in $(seq $sta $end $step)
+        for thread_count in $(seq $sta $step $end)
         do
             echo "Doing ${data[$i]}\$${thread_count}" >&2
             export OMP_NUM_THREADS=$thread_count
