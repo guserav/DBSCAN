@@ -29,6 +29,7 @@ do
     else
         for thread_count in $(seq $sta $step $end)
         do
+            date >&2
             echo "Doing ${data[$i]}\$${thread_count}" >&2
             export OMP_NUM_THREADS=$thread_count
             $program "${task_name}\$${data[$i]}\$${thread_count}" ";" $runs "data/${data[$i]}.data" 2 ";" "${eps[$i]}" "${minPts[$i]}" 2>&1 > /dev/null
