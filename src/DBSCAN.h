@@ -8,6 +8,7 @@
 #include <vector>
 #include <fstream>
 #include <list>
+#include <mutex>
 #include "DataPointFloat.h"
 #include "Rtree.h"
 

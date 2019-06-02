@@ -7,6 +7,7 @@ class DataPointFloat;
 #include <stdlib.h>
 #include <stdexcept>
 #include <string>
+#include <atomic>
 
 #include "RtreeNode.h"
 
@@ -25,18 +26,19 @@ public:
     bool isUnClassified();
     bool isNoise();
     float getDistance(DataPointFloat *pFloat);
-    void setCluster(int cluster);
+    int setCluster(int cluster);
     int getCluster();
 
     void printToConsole(int level);
     void printForVisualisation(int level);
     void printToConsoleWithCluster();
+    void printToConsoleWithCluster(const std::vector<int>& clusterMapping);
     bool seen();
 
 private:
     float* data;
-    int cluster = UNCLASSIFIED;
-    bool isSeen = false;
+    std::atomic<int> cluster = UNCLASSIFIED;
+    std::atomic<bool> isSeen = false;
     unsigned int dimensions;
     void destruct();
 };

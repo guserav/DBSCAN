@@ -24,16 +24,33 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
     tree.checkIntegrity();
 #endif
 
-    int maxCluster = 0;
-    for(DataPointFloat& seed : datapoints){
-        if(seed.isUnClassified()) {
-            std::list<DataPointFloat*> toDiscover = tree.getNeighbours(&seed, epsilon);
+    const unsigned int size = datapoints.size();
+    std::mutex clusterMappingLock;
+    std::vector<int> clusterMapping;
+    clusterMapping.push_back(0);
+#pragma omp parallel for shared(clusterMapping, clusterMappingLock, datapoints) firstprivate(size)
+    for(int i=0; i < size; i++){
+        DataPointFloat * seed = (datapoints.data() + i);
+        if(seed->isUnClassified()) {
+            std::list<DataPointFloat*> toDiscover = tree.getNeighbours(seed, epsilon);
             if(toDiscover.size() < minPts + 1) { //getNeighbours includes the point itself
-                seed.setCluster(NOISE);
+                int cluster = seed->setCluster(NOISE);
+                if(cluster != UNCLASSIFIED) {
+                    seed->setCluster(cluster);
+                }
                 continue;
             }
-            int currentCluster = ++maxCluster;
-            seed.setCluster(currentCluster);
+            int currentCluster = -1;
+            {
+                std::lock_guard<std::mutex> lock(clusterMappingLock);
+                clusterMapping.push_back(clusterMapping.size());
+                currentCluster = clusterMapping.size() - 1;
+                const int prevCluster = seed->setCluster(currentCluster);
+                if(prevCluster != UNCLASSIFIED) {
+                    clusterMapping[currentCluster] = clusterMapping[prevCluster];
+                    continue;
+                }
+            }
             for(DataPointFloat*& point : toDiscover){
                 point->seen();
             }
@@ -41,31 +58,41 @@ void DBSCAN::dbscan(const std::string& filename, unsigned int dimensions, char d
             while(!toDiscover.empty()) {
                 currentNode = toDiscover.front(); // Do breath first as this should avoid more collisions in parallel case
                 toDiscover.pop_front();
-                if(currentNode->isNoise()){
-                    currentNode->setCluster(currentCluster);
-                    continue;
-                }
-                if(currentNode->isUnClassified()){
-                    currentNode->setCluster(currentCluster);
-                    std::list<DataPointFloat*> neighbours = tree.getNeighbours(currentNode, epsilon);
-                    if(neighbours.size() < minPts + 1) continue;
-                    for(DataPointFloat* point : neighbours) {
-                        if(!point->seen()){
+                const int previousCluster = currentNode->setCluster(currentCluster);
+                if (previousCluster == NOISE) { continue; }
+                if (previousCluster == UNCLASSIFIED) {
+                    std::list<DataPointFloat *> neighbours = tree.getNeighbours(currentNode, epsilon);
+                    if (neighbours.size() < minPts + 1) continue;
+                    for (DataPointFloat *point : neighbours) {
+                        if (point->seen()) {
+                            const int otherCluster = point->getCluster();
+                            if (currentCluster != otherCluster && otherCluster != NOISE &&
+                                otherCluster != UNCLASSIFIED) {
+                                std::lock_guard<std::mutex> lock(clusterMappingLock);
+                                if (currentCluster < otherCluster) {
+                                    if (currentCluster <= clusterMapping[otherCluster]) {
+                                        clusterMapping[otherCluster] = currentCluster;
+                                    } else {
+                                        currentCluster = (clusterMapping[currentCluster] = clusterMapping[otherCluster]);
+                                    }
+                                } else {
+                                    currentCluster = (clusterMapping[currentCluster] = clusterMapping[otherCluster]);
+                                }
+                            }
+                        } else {
                             toDiscover.push_back(point);
                         }
                     }
                 }
-#ifdef _DEBUG
-                if(currentNode->getCluster() != currentCluster) {
-                    throw std::runtime_error("This should be in the current cluster right now");
-                }
-#endif
             }
         }
     }
+    for(int i=0; i < clusterMapping.size(); i++) {
+        clusterMapping[i] = clusterMapping[clusterMapping[i]];
+    }
     if(writeToConsole) {
         for(DataPointFloat& point : datapoints){
-            point.printToConsoleWithCluster();
+            point.printToConsoleWithCluster(clusterMapping);
         }
     }
 }

@@ -35,10 +35,10 @@ DataPointFloat &DataPointFloat::operator=(const DataPointFloat& obj) {
         destruct();
 
         dimensions = obj.dimensions;
-        cluster = obj.cluster;
+        cluster = obj.cluster.load();
         data = new float[dimensions];
         std::copy(obj.data, obj.data + dimensions, data);
-        isSeen = obj.isSeen;
+        isSeen = obj.isSeen.load();
     }
     return *this;
 }
@@ -48,9 +48,9 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
         destruct();
 
         dimensions = obj.dimensions;
-        cluster = obj.cluster;
+        cluster = obj.cluster.load();
         data = obj.data;
-        isSeen = obj.isSeen;
+        isSeen = obj.isSeen.load();
 
         obj.dimensions = 0;
         obj.cluster = 0;
@@ -66,11 +66,11 @@ DataPointFloat &DataPointFloat::operator=(DataPointFloat&& obj) noexcept{
     return *this;
 }
 
-DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster), data(new float[obj.dimensions]), isSeen(obj.isSeen) {
+DataPointFloat::DataPointFloat(const DataPointFloat &obj) : dimensions(obj.dimensions), cluster(obj.cluster.load()), data(new float[obj.dimensions]), isSeen(obj.isSeen.load()) {
     std::copy(obj.data, obj.data + dimensions, data);
 }
 
-DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster), data(obj.data), isSeen(obj.isSeen) {
+DataPointFloat::DataPointFloat(DataPointFloat &&obj) noexcept: dimensions(obj.dimensions), cluster(obj.cluster.load()), data(obj.data), isSeen(obj.isSeen.load()) {
     if(this != &obj) {
         obj.dimensions = 0;
         obj.cluster = 0;
@@ -137,6 +137,13 @@ void DataPointFloat::printToConsoleWithCluster(){
     std::cout << std::to_string(this->cluster) << std::endl;
 }
 
+void DataPointFloat::printToConsoleWithCluster(const std::vector<int>& clusterMapping){
+    for(int i = 0; i < this->dimensions; i++){
+        std::cout << std::to_string(data[i]) << ";" ;
+    }
+    std::cout << std::to_string(clusterMapping[this->cluster]) << std::endl;
+}
+
 bool DataPointFloat::isUnClassified() {
     return this->cluster == UNCLASSIFIED;
 }
@@ -154,16 +161,21 @@ float DataPointFloat::getDistance(DataPointFloat *pFloat) {
     return distance;
 }
 
-void DataPointFloat::setCluster(int cluster) {
-    this->cluster = cluster;
+/**
+ * Sests the cluster to the specified value and returns the previous one
+ * @param cluster
+ * @return The previous value of this->cluster
+ */
+int DataPointFloat::setCluster(int cluster) {
+    return this->cluster.exchange(cluster, std::memory_order_acq_rel);
 }
 
 int DataPointFloat::getCluster() {
-    return this->cluster;
+    return this->cluster.load(std::memory_order_acquire);
 }
 
 bool DataPointFloat::isNoise() {
-    return this->cluster == NOISE;
+    return this->cluster.load(std::memory_order_acquire) == NOISE;
 }
 
 /**
@@ -173,9 +185,5 @@ bool DataPointFloat::isNoise() {
  * @return whether it has been seen before.
  */
 bool DataPointFloat::seen() {
-    if(this->isSeen){
-        return true;
-    }
-    this->isSeen = true;
-    return false;
+    return this->isSeen.exchange(true, std::memory_order_acq_rel);
 }
